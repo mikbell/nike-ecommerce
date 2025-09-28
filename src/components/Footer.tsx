@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -89,7 +91,7 @@ const Footer = ({ className }: FooterProps) => {
             <p className="text-light-400 text-body mb-6">
               Just Do It. Bringing inspiration and innovation to every athlete in the world.
             </p>
-            
+
             {/* Social Links */}
             <div className="flex space-x-4">
               {socialLinks.map((social) => (
