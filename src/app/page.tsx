@@ -1,18 +1,14 @@
 'use client';
-
-import Navbar from '@/components/Navbar';
 import Card from '@/components/Card';
-import Footer from '@/components/Footer';
 
 const Home = () => {
-    // Sample shoe data for demonstration
     const sampleShoes = [
         {
             title: "Air Jordan 1 Retro High OG",
             description: "Classic basketball shoe with premium leather construction",
             price: 170,
             originalPrice: 200,
-            imageUrl: "/next.svg", // Using placeholder from public folder
+            imageUrl: "/shoes/shoe-1.jpg", // Using placeholder from public folder
             category: "Basketball",
             colors: ["Black", "White", "Red"],
             sizes: ["8", "9", "10", "11"],
@@ -23,7 +19,7 @@ const Home = () => {
             title: "Nike Air Max 90",
             description: "Iconic running shoe with visible Air cushioning",
             price: 120,
-            imageUrl: "/vercel.svg", // Using placeholder from public folder
+            imageUrl: "/shoes/shoe-2.webp", // Using placeholder from public folder
             category: "Running",
             colors: ["White", "Black", "Grey"],
             sizes: ["7", "8", "9", "10", "11", "12"],
@@ -34,7 +30,7 @@ const Home = () => {
             title: "Nike Dunk Low",
             description: "Versatile lifestyle shoe with classic basketball DNA",
             price: 100,
-            imageUrl: "/globe.svg", // Using placeholder from public folder
+            imageUrl: "/shoes/shoe-3.webp", // Using placeholder from public folder
             category: "Lifestyle",
             colors: ["White", "Black"],
             sizes: ["8", "9", "10"],
@@ -43,9 +39,7 @@ const Home = () => {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <Navbar />
-            
+        <div className="min-h-screen flex flex-col">            
             <main className="flex-1">
                 {/* Hero Section */}
                 <section className="bg-light-200 py-16">
@@ -83,8 +77,6 @@ const Home = () => {
                     </div>
                 </section>
             </main>
-
-            <Footer />
         </div>
     );
 }
