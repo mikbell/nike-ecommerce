@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Button } from "./ui/button";
-import { Search, Heart, ShoppingCart, Menu, X } from "lucide-react";
+import { Search, Heart, ShoppingCart, Menu, X, User } from "lucide-react";
 interface NavbarProps {
 	className?: string;
 }
@@ -38,7 +38,13 @@ const Navbar = ({ className }: NavbarProps) => {
 						<Link
 							href="/"
 							className="flex items-center text-dark-900 font-bold text-2xl font-jost">
-							<Image src="/logo.svg" alt="Logo" width={100} height={100} className="w-16 h-16"/>
+							<Image
+								src="/logo.svg"
+								alt="Logo"
+								width={100}
+								height={100}
+								className="w-16 h-16"
+							/>
 						</Link>
 					</div>
 
@@ -57,7 +63,15 @@ const Navbar = ({ className }: NavbarProps) => {
 					</div>
 
 					{/* Right side icons */}
-					<div className="hidden md:flex items-center space-x-4">
+					<div className="hidden md:flex items-center">
+						<Link href="/sign-in">
+							<Button variant="ghost">Sign in</Button>
+						</Link>
+
+						<Link href="/sign-up">
+							<Button variant="ghost">Sign up</Button>
+						</Link>
+						
 						{/* Search */}
 						<Button variant="ghost">
 							<Search />
