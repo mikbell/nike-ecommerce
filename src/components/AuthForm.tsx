@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Form,
 	FormControl,
@@ -35,7 +36,7 @@ interface AuthFormProps {
 export default function AuthForm({ mode }: AuthFormProps) {
 	const [showPassword, setShowPassword] = useState(false);
 	const isSignUp = mode === "signup";
-	
+
 	const schema = isSignUp ? signUpSchema : signInSchema;
 	type FormData = z.infer<typeof schema>;
 
