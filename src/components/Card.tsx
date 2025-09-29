@@ -44,7 +44,7 @@ const Card = ({
 }: CardProps) => {
   const cardContent = (
     <div className={cn(
-      'group bg-light-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300',
+      'group bg-light-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:shadow-black/5 transition-all duration-300 ring-1 ring-border/50',
       className
     )}>
       {/* Image Container */}
@@ -60,12 +60,12 @@ const Card = ({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {isNew && (
-            <span className="bg-green text-light-100 px-2 py-1 text-caption font-medium rounded">
+            <span className="bg-green text-light-100 px-2 py-1 text-caption font-medium rounded-full shadow-sm">
               New
             </span>
           )}
           {isSale && (
-            <span className="bg-red text-light-100 px-2 py-1 text-caption font-medium rounded">
+            <span className="bg-red text-light-100 px-2 py-1 text-caption font-medium rounded-full shadow-sm">
               Sale
             </span>
           )}
@@ -79,7 +79,7 @@ const Card = ({
               e.stopPropagation();
               onToggleFavorite();
             }}
-            className="absolute top-3 right-3 p-2 bg-light-100/80 hover:bg-light-100 rounded-full transition-colors duration-200"
+            className="absolute top-3 right-3 p-2 bg-light-100/80 hover:bg-light-100 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <svg
@@ -105,7 +105,7 @@ const Card = ({
                 e.stopPropagation();
                 onAddToCart();
               }}
-              className="w-full bg-dark-900 text-light-100 py-2 px-4 text-body-medium font-medium rounded hover:bg-dark-700 transition-colors duration-200"
+              className="w-full bg-dark-900 text-light-100 py-2 px-4 text-body-medium font-medium rounded-md hover:bg-dark-700 transition-colors duration-200 shadow-sm"
             >
               Add to Cart
             </button>

@@ -98,7 +98,7 @@ const Footer = ({ className }: FooterProps) => {
                 <Link
                   key={social.href}
                   href={social.href}
-                  className="text-light-400 hover:text-light-100 transition-colors duration-200"
+                  className="text-light-400 hover:text-light-100 transition-colors duration-200 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                   aria-label={social.label}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -120,7 +120,7 @@ const Footer = ({ className }: FooterProps) => {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-light-400 hover:text-light-100 text-body transition-colors duration-200"
+                      className="text-light-400 hover:text-light-100 hover:underline underline-offset-4 text-body transition-colors duration-200 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                     >
                       {link.label}
                     </Link>
@@ -143,19 +143,19 @@ const Footer = ({ className }: FooterProps) => {
             <div className="flex flex-wrap justify-center md:justify-end space-x-6">
               <Link
                 href="/privacy"
-                className="text-light-400 hover:text-light-100 text-body transition-colors duration-200"
+                className="text-light-400 hover:text-light-100 hover:underline underline-offset-4 text-body transition-colors duration-200 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
               >
                 Privacy Policy
               </Link>
               <Link
                 href="/terms"
-                className="text-light-400 hover:text-light-100 text-body transition-colors duration-200"
+                className="text-light-400 hover:text-light-100 hover:underline underline-offset-4 text-body transition-colors duration-200 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
               >
                 Terms of Use
               </Link>
               <Link
                 href="/cookies"
-                className="text-light-400 hover:text-light-100 text-body transition-colors duration-200"
+                className="text-light-400 hover:text-light-100 hover:underline underline-offset-4 text-body transition-colors duration-200 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
               >
                 Cookie Settings
               </Link>
@@ -164,7 +164,7 @@ const Footer = ({ className }: FooterProps) => {
 
           {/* Country/Region Selector */}
           <div className="mt-6 flex justify-center md:justify-start">
-            <button className="flex items-center text-light-400 hover:text-light-100 text-body transition-colors duration-200">
+            <button className="flex items-center text-light-400 hover:text-light-100 text-body transition-colors duration-200 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
