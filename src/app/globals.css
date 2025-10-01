@@ -4,22 +4,6 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Dark shades */
-  --color-dark-900: #111111;
-  --color-dark-700: #757575;
-  --color-dark-500: #aaaaaa;
-
-  /* Light shades */
-  --color-light-100: #ffffff;
-  --color-light-200: #f5f5f5;
-  --color-light-300: #e5e5e5;
-  --color-light-400: #cccccc;
-
-  /* Supporting colors */
-  --color-green: #007d48;
-  --color-red: #d33918;
-  --color-orange: #d37918;
-
   /* Font family */
   --font-jost: "Jost", sans-serif;
 
@@ -61,6 +45,9 @@
   --text-footnote--font-weight: 400;
 }
 
+/* Questo blocco garantisce che tutte le variabili di Shadcn/UI (come bg-background) 
+  siano mappate correttamente dal motore di Tailwind.
+*/
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -99,80 +86,150 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* --- LIGHT MODE (default) --- */
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* 1. PALETTE DEFINITION (Using approximated OKLCH values for consistency) */
+  --color-dark-900: oklch(0.198 0 0);
+  /* #111111 */
+  --color-dark-700: oklch(0.556 0 0);
+  /* #757575 */
+  --color-dark-500: oklch(0.708 0 0);
+  /* #aaaaaa */
+
+  --color-light-100: oklch(1 0 0);
+  /* #ffffff */
+  --color-light-200: oklch(0.97 0 0);
+  /* #f5f5f5 */
+  --color-light-300: oklch(0.922 0 0);
+  /* #e5e5e5 */
+  --color-light-400: oklch(0.817 0 0);
+  /* #cccccc */
+
+  /* Supporting colors (Kept as original OKLCH for vibrancy) */
+  --color-green: oklch(0.42 0.155 146.7);
+  --color-red: oklch(0.485 0.23 27.2);
+  --color-orange: oklch(0.584 0.203 70.3);
+
+  /* 2. SEMANTIC SHADCN MAPPING (Light Mode) */
+  --background: var(--color-light-100);
+  --foreground: var(--color-dark-900);
+
+  --card: var(--color-light-100);
+  --card-foreground: var(--color-dark-900);
+
+  --popover: var(--color-light-100);
+  --popover-foreground: var(--color-dark-900);
+
+  --primary: var(--color-dark-900);
+  /* Strongest color for primary action */
+  --primary-foreground: var(--color-light-100);
+  /* White text on dark primary */
+
+  --secondary: var(--color-light-200);
+  --secondary-foreground: var(--color-dark-900);
+
+  --muted: var(--color-light-300);
+  --muted-foreground: var(--color-dark-700);
+
+  --accent: var(--color-light-200);
+  --accent-foreground: var(--color-dark-900);
+
+  --destructive: var(--color-red);
+  --destructive-foreground: var(--color-light-100);
+
+  --border: var(--color-light-300);
+  --input: var(--color-light-300);
+  --ring: var(--color-dark-500);
+  /* Muted focus ring */
+
+  /* Chart Colors - Using supporting colors or distinct OKLCH values */
+  --chart-1: var(--color-green);
+  --chart-2: var(--color-orange);
+  --chart-3: var(--color-red);
+  --chart-4: oklch(0.646 0.222 41.116);
+  --chart-5: oklch(0.6 0.118 184.704);
+
+  /* Sidebar Colors (Usually slightly different background than main) */
+  --sidebar: var(--color-light-200);
+  --sidebar-foreground: var(--color-dark-900);
+  --sidebar-primary: var(--color-dark-900);
+  --sidebar-primary-foreground: var(--color-light-100);
+  --sidebar-accent: var(--color-light-300);
+  --sidebar-accent-foreground: var(--color-dark-900);
+  --sidebar-border: var(--color-light-400);
+  --sidebar-ring: var(--color-dark-500);
 }
 
+/* --- DARK MODE --- */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* 2. SEMANTIC SHADCN MAPPING (Dark Mode) */
+  --background: var(--color-dark-900);
+  --foreground: var(--color-light-100);
+
+  --card: oklch(0.25 0 0);
+  /* Slightly lighter than background for depth */
+  --card-foreground: var(--color-light-100);
+
+  --popover: oklch(0.25 0 0);
+  --popover-foreground: var(--color-light-100);
+
+  --primary: var(--color-light-400);
+  /* Lighter gray for strong action contrast */
+  --primary-foreground: var(--color-dark-900);
+  /* Dark text on light primary */
+
+  --secondary: var(--color-dark-700);
+  --secondary-foreground: var(--color-light-100);
+
+  --muted: var(--color-dark-700);
+  --muted-foreground: var(--color-dark-500);
+
+  --accent: var(--color-dark-700);
+  --accent-foreground: var(--color-light-100);
+
+  /* Destructive color slightly adjusted for dark mode visibility */
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
+  --destructive-foreground: var(--color-dark-900);
+
+  --border: oklch(0.985 0 0 / 10%);
+  /* Very subtle border */
+  --input: oklch(0.985 0 0 / 15%);
+  /* Subtle input fill */
+  --ring: var(--color-dark-500);
+  /* Muted focus ring */
+
+  /* Chart Colors - Adjusted for Dark Mode (Brighter hues for visibility) */
+  --chart-1: oklch(0.6 0.18 146.7);
+  /* Brighter Green */
+  --chart-2: oklch(0.7 0.16 70.3);
+  /* Brighter Orange */
+  --chart-3: oklch(0.6 0.18 27.2);
+  /* Brighter Red */
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+
+  /* Sidebar Colors */
   --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Darker than card, lighter than background */
+  --sidebar-foreground: var(--color-light-100);
+  --sidebar-primary: var(--color-light-400);
+  --sidebar-primary-foreground: var(--color-dark-900);
+  --sidebar-accent: var(--color-dark-700);
+  --sidebar-accent-foreground: var(--color-light-100);
+  --sidebar-border: oklch(0.985 0 0 / 10%);
+  --sidebar-ring: var(--color-dark-500);
 }
 
 @layer base {
   * {
+    /* Use var(--border) and var(--ring) defined above */
     @apply border-border outline-ring/50;
   }
+
   body {
+    /* Use var(--background) and var(--foreground) defined above */
     @apply bg-background text-foreground;
   }
 }

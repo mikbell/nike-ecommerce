@@ -1,5 +1,5 @@
-import AuthForm from "@/components/AuthForm";
-import SocialProviders from "@/components/SocialProviders";
+import AuthForm from "@/components/auth-form";
+import SocialProviders from "@/components/social-providers";
 import Link from "next/link";
 
 export default function SignUpPage() {

@@ -1,9 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import Card from '@/components/Card'
+import Card from '@/components/card'
+import '@testing-library/jest-dom'
 
 // Mock the utils function
 jest.mock('@/lib/utils', () => ({
-  cn: (...classes: any[]) => classes.filter(Boolean).join(' ')
+  cn: (...classes: string[]) => classes.filter(Boolean).join(' ')
 }))
 
 describe('Card Component', () => {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Jost } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const jost = Jost({
 	variable: "--font-jost",
@@ -18,10 +19,12 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<body
 				className={`${jost.variable} antialiased`}>
-				{children}
+				<ThemeProvider attribute="class" defaultTheme="light">
+					{children}
+				</ThemeProvider>
 			</body>
 		</html>
 	);

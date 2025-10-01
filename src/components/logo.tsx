@@ -1,0 +1,29 @@
+import React from "react";
+import Link from "next/link";
+
+const Logo = () => {
+	return (
+		<div className="flex-shrink-0">
+			<Link
+				href="/"
+				className="flex items-center text-foreground font-bold text-heading-3 md:text-heading-2 font-jost transition-colors duration-300">
+				<svg
+					width="80"
+					height="29"
+					viewBox="0 0 80 29"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					className="mr-2 h-7 w-auto transition-colors duration-300">
+					<path
+						fillRule="evenodd"
+						clipRule="evenodd"
+						d="M79.7143 0L21.418 25.1469C16.5644 27.2409 12.4814 28.2857 9.19105 28.2857C5.48886 28.2857 2.79193 26.9572 1.13569 24.3047C-1.01212 20.8822 -0.0732836 15.379 3.6112 9.56968C5.79885 6.17413 8.57993 3.05779 11.2901 0.0765583C10.6524 1.13035 5.02387 10.655 11.1794 15.1404C12.3973 16.041 14.1288 16.4824 16.2589 16.4824C17.9683 16.4824 19.9301 16.1986 22.0867 15.6267L79.7143 0Z"
+						fill="currentColor"
+					/>
+				</svg>
+			</Link>
+		</div>
+	);
+};
+
+export default Logo;

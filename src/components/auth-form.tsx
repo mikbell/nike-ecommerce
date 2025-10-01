@@ -21,6 +21,7 @@ import {
 	signUp as signUpAction,
 	signIn as signInAction,
 } from "@/lib/auth/actions";
+import { useRouter } from "next/navigation";
 
 // --- Schemi Zod (Restano uguali) ---
 const signInSchema = z.object({
@@ -40,6 +41,7 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ mode }: AuthFormProps) {
+	const router = useRouter();
 	const [showPassword, setShowPassword] = useState(false);
 	const isSignUp = mode === "signup";
 
@@ -85,10 +87,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
 				// In caso di Sign Up, reindirizziamo al login
 				if (isSignUp) {
-					window.location.href = "/sign-in";
+					router.push("/sign-in");
 				} else {
 					// In caso di Sign In, reindirizziamo alla dashboard
-					window.location.href = "/";
+					router.push("/");
 				}
 			}
 		});

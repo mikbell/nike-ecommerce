@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { HeartIcon } from "lucide-react";
+import { Badge } from "./ui/badge";
 
 interface CardProps {
 	id?: string | number;
@@ -61,30 +62,36 @@ const Card = ({
 				{/* Badges */}
 				<div className="absolute top-3 left-3 flex flex-col gap-2">
 					{isNew && (
-						<span className="bg-green text-light-100 px-2 py-1 text-caption font-medium rounded-full shadow-sm">
-							New
-						</span>
+						<Badge>New</Badge>
 					)}
 					{isSale && (
-						<span className="bg-red text-light-100 px-2 py-1 text-caption font-medium rounded-full shadow-sm">
-							Sale
-						</span>
+						<Badge variant="destructive">Sale</Badge>
 					)}
 				</div>
 
 				{/* Favorite Button */}
 				{onToggleFavorite && (
 					<Button
-						variant="ghost"
-            size="icon"
-            className={cn('absolute top-3 right-3', isFavorite ? 'text-red' : 'text-dark-700')}
-            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+						variant="outline"
+						size="icon"
+						className={cn(
+							"absolute top-3 right-3",
+							isFavorite ? "text-red" : "text-dark-700"
+						)}
+						aria-label={
+							isFavorite ? "Remove from favorites" : "Add to favorites"
+						}
 						onClick={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
 							onToggleFavorite();
 						}}>
-						<HeartIcon className={cn('w-5 h-5', isFavorite ? 'text-red fill-red' : 'text-dark-700')}/>
+						<HeartIcon
+							className={cn(
+								"w-5 h-5",
+								isFavorite ? "text-red fill-red" : "text-dark-700"
+							)}
+						/>
 					</Button>
 				)}
 
@@ -97,7 +104,7 @@ const Card = ({
 								e.stopPropagation();
 								onAddToCart();
 							}}
-              className="w-full">
+							className="w-full">
 							Add to Cart
 						</Button>
 					</div>
