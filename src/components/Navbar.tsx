@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 import Logo from "./logo";
-import MobileNav from "./mobile-menu";
+import MobileNav from "./mobile-nav";
 import DesktopNav from "./desktop-nav";
 import { getCurrentUser } from "@/lib/auth/actions";
 

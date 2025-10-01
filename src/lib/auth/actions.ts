@@ -7,8 +7,8 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 
+// Definizione degli Schemi Zod
 const signUpSchema = z.object({
 	name: z.string().min(2, "Name must be at least 2 characters"),
 	email: z.email("Invalid email address"),
@@ -20,14 +20,18 @@ const signInSchema = z.object({
 	password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+// Costanti per la gestione dei Cookie
 const GUEST_COOKIE_NAME = "guest_session";
 const GUEST_COOKIE_OPTIONS = {
 	httpOnly: true,
 	secure: process.env.NODE_ENV === "production",
 	sameSite: "strict" as const,
-	maxAge: 60 * 60 * 24 * 7, // 7 days
+	maxAge: 60 * 60 * 24 * 7, // 7 giorni
 };
 
+/**
+ * Funzione di registrazione utente.
+ */
 export async function signUp(formData: FormData) {
 	try {
 		const rawData = {
@@ -48,6 +52,7 @@ export async function signUp(formData: FormData) {
 			},
 		});
 
+		// Se esisteva una sessione guest, la pulisce ora che l'utente è registrato
 		if (guestSessionToken && result.user?.id) {
 			await mergeGuestCartWithUserCart(result.user.id, guestSessionToken);
 		}
@@ -64,6 +69,9 @@ export async function signUp(formData: FormData) {
 	}
 }
 
+/**
+ * Funzione di accesso utente.
+ */
 export async function signIn(formData: FormData) {
 	try {
 		const rawData = {
@@ -82,6 +90,7 @@ export async function signIn(formData: FormData) {
 			},
 		});
 
+		// Se esisteva una sessione guest, la pulisce ora che l'utente ha effettuato l'accesso
 		if (guestSessionToken && result.user?.id) {
 			await mergeGuestCartWithUserCart(result.user.id, guestSessionToken);
 		}
@@ -98,6 +107,9 @@ export async function signIn(formData: FormData) {
 	}
 }
 
+/**
+ * Funzione di disconnessione utente.
+ */
 export async function signOut() {
 	try {
 		await auth.api.signOut({
@@ -113,22 +125,23 @@ export async function signOut() {
 	}
 }
 
+/**
+ * Crea una nuova sessione ospite (guest) e imposta il cookie.
+ */
 export async function createGuestSession() {
 	try {
 		const sessionToken = crypto.randomUUID();
-		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 giorni
+		const cookiesStore = await cookies();
 
 		await db.insert(guest).values({
-			id: uuidv4(),
+			// Usiamo crypto.randomUUID() per l'ID del database
+			id: crypto.randomUUID(),
 			sessionToken,
 			expiresAt,
 		});
 
-		(await cookies()).set(
-			GUEST_COOKIE_NAME,
-			sessionToken,
-			GUEST_COOKIE_OPTIONS
-		);
+		cookiesStore.set(GUEST_COOKIE_NAME, sessionToken, GUEST_COOKIE_OPTIONS);
 
 		return { success: true, sessionToken };
 	} catch (error) {
@@ -143,9 +156,13 @@ export async function createGuestSession() {
 	}
 }
 
+/**
+ * Recupera il token di sessione ospite se è valido.
+ */
 export async function getGuestSession() {
 	try {
-		const sessionToken = (await cookies()).get(GUEST_COOKIE_NAME)?.value;
+		const cookiesStore = await cookies();
+		const sessionToken = cookiesStore.get(GUEST_COOKIE_NAME)?.value;
 
 		if (!sessionToken) {
 			return null;
@@ -157,16 +174,18 @@ export async function getGuestSession() {
 			.where(eq(guest.sessionToken, sessionToken))
 			.limit(1);
 
+		// Sessione non trovata nel DB, elimino il cookie
 		if (guestSession.length === 0) {
-			(await cookies()).delete(GUEST_COOKIE_NAME);
+			cookiesStore.delete(GUEST_COOKIE_NAME);
 			return null;
 		}
 
 		const session = guestSession[0];
 
+		// Sessione scaduta, la elimino dal DB e dal cookie
 		if (session.expiresAt < new Date()) {
 			await db.delete(guest).where(eq(guest.sessionToken, sessionToken));
-			(await cookies()).delete(GUEST_COOKIE_NAME);
+			cookiesStore.delete(GUEST_COOKIE_NAME);
 			return null;
 		}
 
@@ -177,44 +196,77 @@ export async function getGuestSession() {
 	}
 }
 
+/**
+ * Pulisce la sessione guest dal database e dal browser dopo l'accesso/registrazione.
+ * (Quando la logica del carrello sarà implementata, l'unione avverrà qui).
+ */
 export async function mergeGuestCartWithUserCart(
 	userId: string,
 	guestSessionToken: string
 ) {
 	try {
+		// PER ORA: Semplice eliminazione della sessione guest
 		await db.delete(guest).where(eq(guest.sessionToken, guestSessionToken));
 
-		console.log(`Guest cart migration for user ${userId} completed`);
+		console.log(`Guest session cleanup for user ${userId} completed`);
 		return { success: true };
 	} catch (error) {
-		console.error("Merge guest cart error:", error);
+		console.error("Merge/Cleanup guest session error:", error);
 		return {
 			success: false,
 			error:
-				error instanceof Error ? error.message : "Failed to merge guest cart",
+				error instanceof Error
+					? error.message
+					: "Failed to clean up guest session",
 		};
 	}
 }
 
+/**
+ * Pulisce la sessione ospite dal DB e dal browser.
+ */
 async function clearGuestSession() {
 	try {
-		const sessionToken = (await cookies()).get(GUEST_COOKIE_NAME)?.value;
+		const cookiesStore = await cookies();
+		const sessionToken = cookiesStore.get(GUEST_COOKIE_NAME)?.value;
 
 		if (sessionToken) {
 			await db.delete(guest).where(eq(guest.sessionToken, sessionToken));
-
-			(await cookies()).delete(GUEST_COOKIE_NAME);
+			cookiesStore.delete(GUEST_COOKIE_NAME);
 		}
 	} catch (error) {
 		console.error("Clear guest session error:", error);
 	}
 }
 
+/**
+ * Recupera l'utente attualmente autenticato.
+ */
 export async function getCurrentUser() {
 	try {
-		const session = await auth.api.getSession({
-			headers: new Headers(),
+		// 1. Recupera l'istanza dei cookies della richiesta
+		const cookieStore = await cookies();
+
+		// 2. Crea un oggetto Headers che include tutti i cookie della richiesta.
+		// La tua libreria di autenticazione leggerà i cookie da qui.
+		const requestHeaders = new Headers();
+		cookieStore.getAll().forEach((cookie) => {
+			// 'cookie.name=cookie.value; othercookie=...'
+			// Alcune librerie preferiscono l'header 'Authorization' ma l'header 'Cookie'
+			// è più comune per l'autenticazione basata su cookie.
+			requestHeaders.append("Cookie", `${cookie.name}=${cookie.value}`);
 		});
+
+		// Se la tua libreria si aspetta l'header Authorization, dovrai leggerlo specificamente.
+		// Ad esempio, se usi una sessione basata su un token nell'header, dovrai cercare:
+		// const sessionToken = cookieStore.get('auth_session')?.value;
+		// if (sessionToken) requestHeaders.set('Authorization', `Bearer ${sessionToken}`);
+
+		// 3. Passa gli headers popolati alla tua libreria di autenticazione
+		const session = await auth.api.getSession({
+			headers: requestHeaders,
+		});
+
 		return session?.user || null;
 	} catch (error) {
 		console.error("Get current user error:", error);
@@ -222,6 +274,9 @@ export async function getCurrentUser() {
 	}
 }
 
+/**
+ * Reindirizza l'utente alla pagina di accesso se non autenticato.
+ */
 export async function requireAuth() {
 	const user = await getCurrentUser();
 

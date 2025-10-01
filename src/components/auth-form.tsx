@@ -16,23 +16,20 @@ import {
 } from "@/components/ui/form";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-// Importa le tue Server Actions
 import {
 	signUp as signUpAction,
 	signIn as signInAction,
 } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
 
-// --- Schemi Zod (Restano uguali) ---
-const signInSchema = z.object({
-	email: z.string().email("Please enter a valid email address"),
+const signUpSchema = z.object({
+	name: z.string().min(2, "Name must be at least 2 characters"),
+	email: z.email("Invalid email address"),
 	password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-const signUpSchema = z.object({
-	// Nota: Ho aggiunto la tipizzazione string per essere coerente con FormData
-	name: z.string().min(2, "Full name must be at least 2 characters"),
-	email: z.string().email("Please enter a valid email address"),
+const signInSchema = z.object({
+	email: z.email("Invalid email address"),
 	password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -55,41 +52,38 @@ export default function AuthForm({ mode }: AuthFormProps) {
 			: ({ email: "", password: "" } as FormData),
 	});
 
-	// Stato di invio separato per chiarezza (anche se form.formState.isSubmitting funziona)
 	const [isPending, startTransition] = React.useTransition();
 	const isSubmitting = form.formState.isSubmitting || isPending;
 
-	// Rimuoviamo il codice di fetch e localStorage
+	/**
+	 * Gestisce l'invio del form.
+	 */
 	const onSubmit = (data: FormData) => {
-		// La funzione useForm.handleSubmit gestisce già i dati (oggetto)
-		// Ma le Server Actions con react-hook-form/Next.js preferiscono FormData.
-
-		// Creiamo FormData dall'oggetto validato
+		// 1. Converti i dati del form in FormData (necessario per Server Actions)
 		const formData = new window.FormData();
 		Object.entries(data).forEach(([key, value]) => {
 			formData.append(key, value);
 		});
 
+		// 2. Esegui la Server Action all'interno di startTransition
 		startTransition(async () => {
 			const action = isSignUp ? signUpAction : signInAction;
 
 			const result = await action(formData);
 
 			if (!result.success) {
-				// Imposta un errore generale sul form (usa 'root' per visualizzarlo sopra i campi)
+				// Imposta l'errore generale mostrato in cima al form
 				form.setError("root", {
 					type: "manual",
 					message: result.error || "An unknown error occurred.",
 				});
 			} else {
-				// Successo: la navigazione viene gestita all'interno delle Server Actions
-				// tramite `redirect('/path')` per mantenere la sessione lato server.
-
-				// In caso di Sign Up, reindirizziamo al login
+				// Successo: reindirizza
 				if (isSignUp) {
+					// Dopo la registrazione, reindirizza al login
 					router.push("/sign-in");
 				} else {
-					// In caso di Sign In, reindirizziamo alla dashboard
+					// Dopo l'accesso, reindirizza alla home page
 					router.push("/");
 				}
 			}
@@ -185,8 +179,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
 				<Button
 					type="submit"
 					className="w-full h-12 text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-					disabled={isSubmitting}
-				>
+					disabled={isSubmitting}>
 					{isSubmitting ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
 				</Button>
 

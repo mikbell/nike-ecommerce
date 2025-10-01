@@ -10,10 +10,10 @@ interface User {
 	email: string;
 }
 
-const DesktopNav = ({ 
-	navLinks, 
-	currentUser 
-}: { 
+const DesktopNav = ({
+	navLinks,
+	currentUser,
+}: {
 	navLinks: { href: string; label: string }[];
 	currentUser: User | null;
 }) => {
