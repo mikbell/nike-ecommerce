@@ -115,3 +115,7 @@ The application includes a `products` table with the following fields:
 3. Make your changes
 4. Run tests and linting
 5. Submit a pull request
+
+## Verification
+
+Repository access and CI/CD workflows have been verified.
