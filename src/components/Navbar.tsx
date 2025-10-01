@@ -19,7 +19,6 @@ const Navbar = async ({ className }: NavbarProps) => {
 	];
 
 	const currentUser = await getCurrentUser();
-	console.log(currentUser);
 
 	return (
 		<nav
@@ -30,8 +29,8 @@ const Navbar = async ({ className }: NavbarProps) => {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center h-16">
 					<Logo />
-					<DesktopNav navLinks={navLinks}/>
-					<MobileNav navLinks={navLinks} />
+					<DesktopNav navLinks={navLinks} currentUser={currentUser} />
+					<MobileNav navLinks={navLinks} currentUser={currentUser} />
 				</div>
 			</div>
 		</nav>
