@@ -3,8 +3,20 @@ import { Button } from "./ui/button";
 import { Search, Heart, ShoppingCart } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
 import Link from "next/link";
+import UserMenu from "./user-menu";
 
-const DesktopNav = ({ navLinks }: { navLinks: { href: string; label: string }[] }) => {
+interface User {
+	name: string;
+	email: string;
+}
+
+const DesktopNav = ({ 
+	navLinks, 
+	currentUser 
+}: { 
+	navLinks: { href: string; label: string }[];
+	currentUser: User | null;
+}) => {
 	return (
 		<>
 			<div className="hidden md:block">
@@ -20,25 +32,28 @@ const DesktopNav = ({ navLinks }: { navLinks: { href: string; label: string }[] 
 				</div>
 			</div>
 			<div className="hidden md:flex items-center">
-				<Link href="/sign-in">
-					<Button variant="ghost">Sign in</Button>
-				</Link>
+				{currentUser ? (
+					<UserMenu userName={currentUser.name} userEmail={currentUser.email} />
+				) : (
+					<>
+						<Link href="/sign-in">
+							<Button variant="ghost">Sign in</Button>
+						</Link>
 
-				<Link href="/sign-up">
-					<Button variant="ghost">Sign up</Button>
-				</Link>
+						<Link href="/sign-up">
+							<Button variant="ghost">Sign up</Button>
+						</Link>
+					</>
+				)}
 
-				{/* Search */}
 				<Button variant="ghost">
 					<Search />
 				</Button>
 
-				{/* Favorites */}
 				<Button variant="ghost">
 					<Heart />
 				</Button>
 
-				{/* Cart */}
 				<Button variant="ghost" className="relative">
 					<ShoppingCart />
 					<span className="absolute -top-1 -right-1 bg-red text-light-100 text-footnote rounded-full h-4 w-4 flex items-center justify-center">
