@@ -124,8 +124,7 @@ export async function signOut() {
 		});
 
 		// 2. PASSO FONDAMENTALE: Cancella manualmente il cookie di sessione utente dal browser.
-		// Assumo che Better-Auth usi 'auth_session' come nome.
-		cookiesStore.delete("better-auth.session");
+		cookiesStore.delete("auth_session");
 
 		// 3. Cancella il cookie guest per pulizia (già presente, ma bene ripeterlo)
 		cookiesStore.delete(GUEST_COOKIE_NAME);
