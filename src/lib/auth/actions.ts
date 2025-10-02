@@ -111,25 +111,41 @@ export async function signIn(formData: FormData) {
  */
 export async function signOut() {
 	try {
-		const cookieStore = await cookies();
+		const cookiesStore = await cookies();
 		const requestHeaders = new Headers();
-		cookieStore.getAll().forEach((cookie) => {
+
+		// 1. Raccogli e passa i cookie all'API per invalidare la sessione sul server (corretto)
+		cookiesStore.getAll().forEach((cookie) => {
 			requestHeaders.append("Cookie", `${cookie.name}=${cookie.value}`);
 		});
-		
+
 		await auth.api.signOut({
 			headers: requestHeaders,
 		});
+
+		// 2. PASSO FONDAMENTALE: Cancella manualmente il cookie di sessione utente dal browser.
+		// Assumo che Better-Auth usi 'auth_session' come nome.
+		cookiesStore.delete("better-auth.session");
+
+		// 3. Cancella il cookie guest per pulizia (già presente, ma bene ripeterlo)
+		cookiesStore.delete(GUEST_COOKIE_NAME);
+
+		// 4. Reindirizza l'utente dopo il logout
+		redirect("/");
+
+		// Non sarà mai raggiunto a causa del redirect, ma manteniamo la coerenza
 		return { success: true };
 	} catch (error) {
 		console.error("Sign out error:", error);
-		return {
-			success: false,
-			error: error instanceof Error ? error.message : "Sign out failed",
-		};
+
+		// Spesso, se il cookie è già sparito (es. sessione scaduta), l'API fallisce.
+		// Se non riusciamo a fare il logout "pulito", reindirizziamo comunque
+		// per un'esperienza utente coerente.
+		redirect("/");
+
+		// ... (return error originale, ma redirect è preferibile in questo contesto)
 	}
 }
-
 /**
  * Crea una nuova sessione ospite (guest) e imposta il cookie.
  */

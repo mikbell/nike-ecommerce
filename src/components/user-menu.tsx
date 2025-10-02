@@ -25,7 +25,6 @@ export default function UserMenu({ userName, userEmail }: UserMenuProps) {
 	const handleSignOut = async () => {
 		await signOut();
 		router.push("/");
-		// router.refresh() is generally not needed after router.push to a new route
 	};
 
 	// Capitalize the first letter in a local variable for display
