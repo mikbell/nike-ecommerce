@@ -11,6 +11,7 @@ export const auth = betterAuth({
 		schema: {
 			user: schema.user,
 			session: schema.session,
+			account: schema.account,
 			requireEmailVerification: false,
 		},
 	}),
