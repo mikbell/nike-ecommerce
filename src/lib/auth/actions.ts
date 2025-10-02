@@ -20,7 +20,6 @@ const signInSchema = z.object({
 	password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-// Costanti per la gestione dei Cookie
 const GUEST_COOKIE_NAME = "guest_session";
 const GUEST_COOKIE_OPTIONS = {
 	httpOnly: true,
@@ -244,25 +243,11 @@ async function clearGuestSession() {
  */
 export async function getCurrentUser() {
 	try {
-		// 1. Recupera l'istanza dei cookies della richiesta
 		const cookieStore = await cookies();
-
-		// 2. Crea un oggetto Headers che include tutti i cookie della richiesta.
-		// La tua libreria di autenticazione leggerà i cookie da qui.
 		const requestHeaders = new Headers();
 		cookieStore.getAll().forEach((cookie) => {
-			// 'cookie.name=cookie.value; othercookie=...'
-			// Alcune librerie preferiscono l'header 'Authorization' ma l'header 'Cookie'
-			// è più comune per l'autenticazione basata su cookie.
 			requestHeaders.append("Cookie", `${cookie.name}=${cookie.value}`);
 		});
-
-		// Se la tua libreria si aspetta l'header Authorization, dovrai leggerlo specificamente.
-		// Ad esempio, se usi una sessione basata su un token nell'header, dovrai cercare:
-		// const sessionToken = cookieStore.get('auth_session')?.value;
-		// if (sessionToken) requestHeaders.set('Authorization', `Bearer ${sessionToken}`);
-
-		// 3. Passa gli headers popolati alla tua libreria di autenticazione
 		const session = await auth.api.getSession({
 			headers: requestHeaders,
 		});
