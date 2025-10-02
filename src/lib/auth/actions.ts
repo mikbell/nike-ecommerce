@@ -111,8 +111,14 @@ export async function signIn(formData: FormData) {
  */
 export async function signOut() {
 	try {
+		const cookieStore = await cookies();
+		const requestHeaders = new Headers();
+		cookieStore.getAll().forEach((cookie) => {
+			requestHeaders.append("Cookie", `${cookie.name}=${cookie.value}`);
+		});
+		
 		await auth.api.signOut({
-			headers: new Headers(),
+			headers: requestHeaders,
 		});
 		return { success: true };
 	} catch (error) {
