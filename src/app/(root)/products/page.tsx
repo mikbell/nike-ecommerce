@@ -3,7 +3,7 @@ import Card from "@/components/Card";
 import Filters from "@/components/Filters";
 import Sort from "@/components/Sort";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_PRODUCTS, type MockProduct } from "@/lib/data/mockProducts";
+import { getAllProducts } from "@/lib/db/queries/products";
 import {
 	parseFiltersFromQuery,
 	stringifyFiltersToQuery,
@@ -11,10 +11,12 @@ import {
 import { X } from "lucide-react";
 import Link from "next/link";
 
+type Product = Awaited<ReturnType<typeof getAllProducts>>[0];
+
 type SearchParams = { [key: string]: string | string[] | undefined };
 
 function filterProducts(
-	products: MockProduct[],
+	products: Product[],
 	filters: ReturnType<typeof parseFiltersFromQuery>
 ) {
 	return products.filter((product) => {
@@ -49,14 +51,16 @@ function filterProducts(
 	});
 }
 
-function sortProducts(products: MockProduct[], sortBy: string) {
+function sortProducts(products: Product[], sortBy: string) {
 	const sorted = [...products];
 
 	switch (sortBy) {
 		case "newest":
-			return sorted.sort(
-				(a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-			);
+			return sorted.sort((a, b) => {
+				const aIsNew = a.isNew ? 1 : 0;
+				const bIsNew = b.isNew ? 1 : 0;
+				return bIsNew - aIsNew;
+			});
 		case "price_asc":
 			return sorted.sort((a, b) => a.price - b.price);
 		case "price_desc":
@@ -67,13 +71,14 @@ function sortProducts(products: MockProduct[], sortBy: string) {
 	}
 }
 
-export default function ProductsPage({
+export default async function ProductsPage({
 	searchParams,
 }: {
 	searchParams: SearchParams;
 }) {
+	const allProducts = await getAllProducts();
 	const filters = parseFiltersFromQuery(searchParams);
-	const filteredProducts = filterProducts(MOCK_PRODUCTS, filters);
+	const filteredProducts = filterProducts(allProducts, filters);
 	const sortedProducts = sortProducts(filteredProducts, filters.sort || "featured");
 
 	const hasActiveFilters =
@@ -91,7 +96,7 @@ export default function ProductsPage({
 							All Products
 						</h1>
 						<p className="text-body text-dark-700">
-							Showing {sortedProducts.length} of {MOCK_PRODUCTS.length} products
+							Showing {sortedProducts.length} of {allProducts.length} products
 						</p>
 					</div>
 
