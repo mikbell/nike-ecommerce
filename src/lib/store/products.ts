@@ -5,7 +5,7 @@ export interface Product {
   slug: string | null;
   name: string;
   description: string | null;
-  price: string;
+  price: number | null;
   imageUrl: string | null;
   category: string | null;
   brand: string | null;

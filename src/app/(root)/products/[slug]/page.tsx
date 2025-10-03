@@ -8,31 +8,32 @@ import {
 	StarHalf,
 	Package,
 	RotateCcw,
+	ShoppingCart,
 } from "lucide-react";
 import ProductGallery from "@/components/product-gallery";
 import SizePicker from "@/components/size-picker";
 import CollapsibleSection from "@/components/collapsible-section";
-import Card from "@/components/card";
 import {
-	getProductDetail,
+	getProductBySlug,
 	getRelatedProducts,
-} from "@/lib/data/mockProductDetails";
-import { getProductById } from "@/lib/db/queries/products";
+} from "@/lib/db/queries/products";
+import RelatedProducts from "@/components/related-products";
 
 interface ProductPageProps {
-	params: {
+	params: Promise<{
 		slug: string;
-	};
+	}>;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-	const product = await getProductById(params.slug);
+	const { slug } = await params;
+	const product = await getProductBySlug(slug);
 
 	if (!product) {
 		notFound();
 	}
 
-	const relatedProducts = await getRelatedProducts(params.slug, 4);
+	const relatedProducts = await getRelatedProducts(product.id, 4);
 	const currentVariant = product.variants[0];
 	const fullStars = Math.floor(product.reviews.averageRating);
 	const hasHalfStar = product.reviews.averageRating % 1 >= 0.5;
@@ -122,9 +123,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 							</div>
 
 							<div className="flex flex-col sm:flex-row gap-3">
-								<Button className="flex-1 h-12 text-body-medium" size="lg">
-									<ShoppingBag className="w-5 h-5 mr-2" />
-									Add to Bag
+								<Button variant="outline" className="flex-1 h-12 text-body-medium" size="lg">
+									<ShoppingCart className="w-5 h-5 mr-2" />
+									Add to Cart
 								</Button>
 								<Button variant="outline" size="lg" className="h-12">
 									<Heart className="w-5 h-5" />
@@ -216,42 +217,33 @@ export default async function ProductPage({ params }: ProductPageProps) {
 						</div>
 					</div>
 
-					<div className="border-t border-light-400 pt-12">
-						<h2 className="text-heading-2 font-jost text-dark-900 mb-8">
-							You Might Also Like
-						</h2>
-						<div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-							{relatedProducts.map((relatedProduct) => (
-								<Card
-									key={relatedProduct.id}
-									id={relatedProduct.id}
-									title={relatedProduct.title}
-									description={relatedProduct.description}
-									price={relatedProduct.price}
-									originalPrice={relatedProduct.originalPrice}
-									imageUrl={
-										relatedProduct.variants[0]?.images[0] || "/shoes/shoe-1.jpg"
-									}
-									category={relatedProduct.category}
-									colors={relatedProduct.variants.map((v) => v.color)}
-									sizes={
-										relatedProduct.variants[0]?.sizes.map((s) => s.size) || []
-									}
-									isNew={relatedProduct.isNew}
-									isSale={relatedProduct.isSale}
-									href={`/products/${relatedProduct.id}`}
-									onAddToCart={() =>
-										console.log(`Added ${relatedProduct.title} to cart`)
-									}
-									onToggleFavorite={() =>
-										console.log(`Toggled favorite for ${relatedProduct.title}`)
-									}
-								/>
-							))}
-						</div>
-					</div>
+					<RelatedProducts relatedProducts={relatedProducts} />
 				</div>
 			</main>
 		</div>
 	);
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: ProductPageProps) {
+	const { slug } = await params;
+	const product = await getProductBySlug(slug);
+
+	if (!product) {
+		return {
+			title: "Product Not Found",
+		};
+	}
+
+	return {
+		title: `${product.title} - ${product.brand}`,
+		description: product.description,
+		openGraph: {
+			title: `${product.title} - ${product.brand}`,
+			description: product.description,
+			images: product.variants[0]?.images[0]
+				? [product.variants[0].images[0]]
+				: [],
+		},
+	};
 }

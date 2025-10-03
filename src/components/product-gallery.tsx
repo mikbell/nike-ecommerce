@@ -4,10 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import { ImageOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ProductVariant } from "@/lib/data/mockProductDetails";
+import { getProductBySlug } from "@/lib/db/queries/products";
+
+type DatabaseVariant = NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>['variants'][0];
 
 interface ProductGalleryProps {
-	variants: ProductVariant[];
+	variants: DatabaseVariant[];
 	productTitle: string;
 }
 
@@ -134,17 +136,17 @@ export default function ProductGallery({ variants, productTitle }: ProductGaller
 					<p className="text-body-medium font-medium text-dark-900">Color: {currentVariant.color}</p>
 					<div className="flex gap-2 flex-wrap">
 						{variants.map((variant, index) => (
-							<button
-								key={variant.id}
-								onClick={() => handleVariantChange(index)}
+						<button
+							key={variant.colorSlug}
+							onClick={() => handleVariantChange(index)}
 								className={cn(
 									"w-12 h-12 rounded-full border-2 transition-all duration-200 flex items-center justify-center",
 									selectedVariantIndex === index
 										? "border-dark-900 ring-2 ring-dark-900 ring-offset-2"
 										: "border-light-400 hover:border-dark-500"
 								)}
-								style={{ backgroundColor: variant.colorHex }}
-								aria-label={`Select ${variant.color} color`}>
+							style={{ backgroundColor: variant.hexCode }}
+							aria-label={`Select ${variant.color} color`}>
 								{selectedVariantIndex === index && (
 									<span className="text-light-100 text-xs">✓</span>
 								)}

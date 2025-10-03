@@ -180,8 +180,10 @@ async function seed() {
 	console.log("🌱 Starting database seed...");
 
 	try {
-		console.log("📦 Seeding genders...");
-		const [, , unisexGender] = await db
+	console.log("📦 Seeding genders...");
+	let unisexGender;
+	try {
+		const [menGender, womenGender, unisex] = await db
 			.insert(schema.genders)
 			.values([
 				{ label: "Men", slug: "men" },
@@ -189,10 +191,19 @@ async function seed() {
 				{ label: "Unisex", slug: "unisex" },
 			])
 			.returning();
+		unisexGender = unisex;
 		console.log("✅ Genders seeded");
+	} catch (error) {
+		console.log("⚠️ Genders already exist, fetching existing data...");
+		const existingGenders = await db.query.genders.findMany();
+		unisexGender = existingGenders.find(g => g.slug === 'unisex') || existingGenders[0];
+		console.log("✅ Using existing genders");
+	}
 
-		console.log("📦 Seeding brand...");
-		const [nikeBrand] = await db
+	console.log("📦 Seeding brand...");
+	let nikeBrand;
+	try {
+		const [brand] = await db
 			.insert(schema.brands)
 			.values([
 				{
@@ -202,10 +213,19 @@ async function seed() {
 				},
 			])
 			.returning();
+		nikeBrand = brand;
 		console.log("✅ Brand seeded");
+	} catch (error) {
+		console.log("⚠️ Brand already exists, fetching existing data...");
+		const existingBrands = await db.query.brands.findMany();
+		nikeBrand = existingBrands.find(b => b.slug === 'nike') || existingBrands[0];
+		console.log("✅ Using existing brand");
+	}
 
-		console.log("📦 Seeding categories...");
-		const categories = await db
+	console.log("📦 Seeding categories...");
+	let categories;
+	try {
+		categories = await db
 			.insert(schema.categories)
 			.values([
 				{ name: "Basketball", slug: "basketball" },
@@ -217,6 +237,11 @@ async function seed() {
 			])
 			.returning();
 		console.log("✅ Categories seeded");
+	} catch (error) {
+		console.log("⚠️ Categories already exist, fetching existing data...");
+		categories = await db.query.categories.findMany();
+		console.log("✅ Using existing categories");
+	}
 
 		const categoryMap = categories.reduce(
 			(acc, cat) => {
@@ -226,15 +251,26 @@ async function seed() {
 			{} as Record<string, (typeof categories)[0]>
 		);
 
-		console.log("📦 Seeding collections...");
-		const [summerCollection, newArrivalsCollection] = await db
+	console.log("📦 Seeding collections...");
+	let summerCollection, newArrivalsCollection;
+	try {
+		const [summer, newArrivals] = await db
 			.insert(schema.collections)
 			.values([
 				{ name: "Summer 2025", slug: "summer-2025" },
 				{ name: "New Arrivals", slug: "new-arrivals" },
 			])
 			.returning();
+		summerCollection = summer;
+		newArrivalsCollection = newArrivals;
 		console.log("✅ Collections seeded");
+	} catch (error) {
+		console.log("⚠️ Collections already exist, fetching existing data...");
+		const existingCollections = await db.query.collections.findMany();
+		summerCollection = existingCollections.find(c => c.slug === 'summer-2025') || existingCollections[0];
+		newArrivalsCollection = existingCollections.find(c => c.slug === 'new-arrivals') || existingCollections[1] || existingCollections[0];
+		console.log("✅ Using existing collections");
+	}
 
 		console.log("📦 Seeding colors...");
 		const colorSet = new Set<string>();
@@ -327,10 +363,17 @@ async function seed() {
 				continue;
 			}
 
+			const slug = productData.name
+				.toLowerCase()
+				.replace(/[^a-z0-9\s-]/g, '')
+				.replace(/\s+/g, '-')
+				.trim();
+			
 			const product = await db
 				.insert(schema.products)
 				.values({
 					name: productData.name,
+					slug: slug,
 					description: productData.description,
 					categoryId: category.id,
 					genderId: unisexGender.id,
