@@ -8,6 +8,7 @@ import { genders } from "./filters/genders";
 
 export const products = pgTable("products", {
 	id: uuid("id").primaryKey().defaultRandom(),
+	slug: text("slug").notNull().unique(),
 	name: text("name").notNull(),
 	description: text("description"),
 	categoryId: uuid("categoryId")

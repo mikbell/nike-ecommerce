@@ -1,20 +1,23 @@
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, ShoppingBag, Star, StarHalf, Package, RotateCcw } from "lucide-react";
-<<<<<<< HEAD:src/app/(root)/products/[slug]/page.tsx
+import {
+	Heart,
+	ShoppingBag,
+	Star,
+	StarHalf,
+	Package,
+	RotateCcw,
+} from "lucide-react";
 import ProductGallery from "@/components/product-gallery";
 import SizePicker from "@/components/size-picker";
 import CollapsibleSection from "@/components/collapsible-section";
 import Card from "@/components/card";
-import { getProductDetail, getRelatedProducts } from "@/lib/data/mockProductDetails";
-=======
-import ProductGallery from "@/components/ProductGallery";
-import SizePicker from "@/components/SizePicker";
-import CollapsibleSection from "@/components/CollapsibleSection";
-import Card from "@/components/Card";
-import { getProductById, getRelatedProducts } from "@/lib/db/queries/products";
->>>>>>> 2ada997d2ab6a13b8c8f9dc3f0bc967d244b513e:src/app/(root)/products/[id]/page.tsx
+import {
+	getProductDetail,
+	getRelatedProducts,
+} from "@/lib/data/mockProductDetails";
+import { getProductById } from "@/lib/db/queries/products";
 
 interface ProductPageProps {
 	params: {
@@ -22,29 +25,22 @@ interface ProductPageProps {
 	};
 }
 
-<<<<<<< HEAD:src/app/(root)/products/[slug]/page.tsx
-export default function ProductPage({ params }: ProductPageProps) {
-	const product = getProductDetail(params.slug);
-=======
 export default async function ProductPage({ params }: ProductPageProps) {
-	const product = await getProductById(params.id);
->>>>>>> 2ada997d2ab6a13b8c8f9dc3f0bc967d244b513e:src/app/(root)/products/[id]/page.tsx
+	const product = await getProductById(params.slug);
 
 	if (!product) {
 		notFound();
 	}
 
-<<<<<<< HEAD:src/app/(root)/products/[slug]/page.tsx
-	const relatedProducts = getRelatedProducts(params.slug, 4);
-=======
-	const relatedProducts = await getRelatedProducts(params.id, 4);
->>>>>>> 2ada997d2ab6a13b8c8f9dc3f0bc967d244b513e:src/app/(root)/products/[id]/page.tsx
+	const relatedProducts = await getRelatedProducts(params.slug, 4);
 	const currentVariant = product.variants[0];
 	const fullStars = Math.floor(product.reviews.averageRating);
 	const hasHalfStar = product.reviews.averageRating % 1 >= 0.5;
 
 	const discount = product.originalPrice
-		? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+		? Math.round(
+				((product.originalPrice - product.price) / product.originalPrice) * 100
+		  )
 		: 0;
 
 	return (
@@ -53,7 +49,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
 						<div>
-							<ProductGallery variants={product.variants} productTitle={product.title} />
+							<ProductGallery
+								variants={product.variants}
+								productTitle={product.title}
+							/>
 						</div>
 
 						<div className="flex flex-col gap-6">
@@ -79,13 +78,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
 									{[...Array(fullStars)].map((_, i) => (
 										<Star key={i} className="w-5 h-5 fill-orange text-orange" />
 									))}
-									{hasHalfStar && <StarHalf className="w-5 h-5 fill-orange text-orange" />}
-									{[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
-										<Star key={`empty-${i}`} className="w-5 h-5 text-dark-300" />
-									))}
+									{hasHalfStar && (
+										<StarHalf className="w-5 h-5 fill-orange text-orange" />
+									)}
+									{[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map(
+										(_, i) => (
+											<Star
+												key={`empty-${i}`}
+												className="w-5 h-5 text-dark-300"
+											/>
+										)
+									)}
 								</div>
 								<span className="text-body text-dark-700">
-									{product.reviews.averageRating} ({product.reviews.totalReviews} reviews)
+									{product.reviews.averageRating} (
+									{product.reviews.totalReviews} reviews)
 								</span>
 							</div>
 
@@ -93,14 +100,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
 								<span className="text-heading-3 font-jost text-dark-900">
 									${product.price.toFixed(2)}
 								</span>
-								{product.originalPrice && product.originalPrice > product.price && (
-									<>
-										<span className="text-body text-dark-500 line-through">
-											${product.originalPrice.toFixed(2)}
-										</span>
-										<Badge variant="destructive">{discount}% OFF</Badge>
-									</>
-								)}
+								{product.originalPrice &&
+									product.originalPrice > product.price && (
+										<>
+											<span className="text-body text-dark-500 line-through">
+												${product.originalPrice.toFixed(2)}
+											</span>
+											<Badge variant="destructive">{discount}% OFF</Badge>
+										</>
+									)}
 							</div>
 
 							<div className="border-t border-light-400 pt-6">
@@ -127,7 +135,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 								<CollapsibleSection title="Product Details" defaultOpen>
 									<div className="space-y-4">
 										<div>
-											<p className="font-medium text-dark-900 mb-2">Materials</p>
+											<p className="font-medium text-dark-900 mb-2">
+												Materials
+											</p>
 											<ul className="list-disc list-inside space-y-1">
 												{product.details.materials.map((material, index) => (
 													<li key={index}>{material}</li>
@@ -144,13 +154,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
 										</div>
 										<div className="grid grid-cols-2 gap-4 pt-2">
 											<div>
-												<p className="text-caption text-dark-700 mb-1">Style Code</p>
+												<p className="text-caption text-dark-700 mb-1">
+													Style Code
+												</p>
 												<p className="text-body font-medium text-dark-900">
 													{product.details.styleCode}
 												</p>
 											</div>
 											<div>
-												<p className="text-caption text-dark-700 mb-1">Colorway</p>
+												<p className="text-caption text-dark-700 mb-1">
+													Colorway
+												</p>
 												<p className="text-body font-medium text-dark-900">
 													{product.details.colorway}
 												</p>
@@ -164,18 +178,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
 										<div className="flex items-start gap-3">
 											<Package className="w-5 h-5 text-dark-700 mt-1 flex-shrink-0" />
 											<div>
-												<p className="font-medium text-dark-900 mb-1">Free Shipping</p>
+												<p className="font-medium text-dark-900 mb-1">
+													Free Shipping
+												</p>
 												<p className="text-body text-dark-700">
-													Free standard shipping on orders over $50. Express shipping available at checkout.
+													Free standard shipping on orders over $50. Express
+													shipping available at checkout.
 												</p>
 											</div>
 										</div>
 										<div className="flex items-start gap-3">
 											<RotateCcw className="w-5 h-5 text-dark-700 mt-1 flex-shrink-0" />
 											<div>
-												<p className="font-medium text-dark-900 mb-1">Easy Returns</p>
+												<p className="font-medium text-dark-900 mb-1">
+													Easy Returns
+												</p>
 												<p className="text-body text-dark-700">
-													Free returns within 60 days of purchase. Items must be unworn and in original packaging.
+													Free returns within 60 days of purchase. Items must be
+													unworn and in original packaging.
 												</p>
 											</div>
 										</div>
@@ -209,15 +229,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
 									description={relatedProduct.description}
 									price={relatedProduct.price}
 									originalPrice={relatedProduct.originalPrice}
-									imageUrl={relatedProduct.variants[0]?.images[0] || "/shoes/shoe-1.jpg"}
+									imageUrl={
+										relatedProduct.variants[0]?.images[0] || "/shoes/shoe-1.jpg"
+									}
 									category={relatedProduct.category}
-									colors={relatedProduct.variants.map(v => v.color)}
-									sizes={relatedProduct.variants[0]?.sizes.map(s => s.size) || []}
+									colors={relatedProduct.variants.map((v) => v.color)}
+									sizes={
+										relatedProduct.variants[0]?.sizes.map((s) => s.size) || []
+									}
 									isNew={relatedProduct.isNew}
 									isSale={relatedProduct.isSale}
 									href={`/products/${relatedProduct.id}`}
-									onAddToCart={() => console.log(`Added ${relatedProduct.title} to cart`)}
-									onToggleFavorite={() => console.log(`Toggled favorite for ${relatedProduct.title}`)}
+									onAddToCart={() =>
+										console.log(`Added ${relatedProduct.title} to cart`)
+									}
+									onToggleFavorite={() =>
+										console.log(`Toggled favorite for ${relatedProduct.title}`)
+									}
 								/>
 							))}
 						</div>
