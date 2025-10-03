@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, Heart, ShoppingCart, Menu, X, User, LogOut } from "lucide-react";
+import { Search, Heart, Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { signOut } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
+import CartDrawer from "./cart/cart-drawer";
 
 const NavLink = ({
 	href,
@@ -109,12 +110,7 @@ const MobileNav = ({ navLinks, currentUser }: MobileNavProps) => {
 								<Heart className="h-6 w-6" />
 							</Button>
 
-							<Button variant="ghost" className="relative">
-								<ShoppingCart className="h-6 w-6" />
-								<span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-destructive text-primary-foreground text-footnote rounded-full h-5 w-5 flex items-center justify-center font-bold text-xs">
-									0
-								</span>
-							</Button>
+							<CartDrawer />
 						</div>
 					</div>
 				</div>

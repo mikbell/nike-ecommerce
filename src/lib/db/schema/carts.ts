@@ -4,6 +4,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { user } from "./user";
 import { guest } from "./guest";
+import { cartItems } from "./cart_items";
 
 export const carts = pgTable("carts", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -13,7 +14,7 @@ export const carts = pgTable("carts", {
 	updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
-export const cartsRelations = relations(carts, ({ one }) => ({
+export const cartsRelations = relations(carts, ({ one, many }) => ({
 	user: one(user, {
 		fields: [carts.userId],
 		references: [user.id],
@@ -22,6 +23,7 @@ export const cartsRelations = relations(carts, ({ one }) => ({
 		fields: [carts.guestId],
 		references: [guest.id],
 	}),
+	cartItems: many(cartItems),
 }));
 
 export const insertCartSchema = createInsertSchema(carts);

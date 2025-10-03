@@ -178,12 +178,12 @@ const Card = ({
 				{/* Price */}
 				<div className="flex items-center gap-2">
 					<span className="text-dark-900 text-body-medium font-medium">
-						${price.toFixed(2)}
+						€{price.toFixed(2)}
 					</span>
 					{originalPrice && originalPrice > price && (
 						<>
 							<span className="text-dark-500 text-body line-through">
-								${originalPrice.toFixed(2)}
+								€{originalPrice.toFixed(2)}
 							</span>
 							<span className="text-red text-caption font-medium">
 								{Math.round(((originalPrice - price) / originalPrice) * 100)}%

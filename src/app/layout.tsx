@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Jost } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const jost = Jost({
 	variable: "--font-jost",
@@ -24,6 +25,7 @@ export default function RootLayout({
 				className={`${jost.variable} antialiased`}>
 				<ThemeProvider attribute="class" defaultTheme="light">
 					{children}
+					<Toaster />
 				</ThemeProvider>
 			</body>
 		</html>

@@ -2,10 +2,60 @@
 import React from "react";
 import Card from "./card";
 import { getAllProducts } from "@/lib/db/queries/products";
+import { useCartStore } from "@/lib/stores/cart-store";
+import { convertProductToCartItem, getAddToCartSuccessMessage, canAddToCart } from "@/lib/utils/cart-utils";
+import { toast } from "sonner";
 
 type ProductListItem = Awaited<ReturnType<typeof getAllProducts>>[0];
 
 const ProductList = ({ products }: { products: ProductListItem[] }) => {
+	const { addItem } = useCartStore();
+
+	const handleAddToCart = (product: ProductListItem) => {
+		// Valida se il prodotto può essere aggiunto al carrello
+		const validation = canAddToCart({
+			id: product.id,
+			title: product.title,
+			slug: product.slug,
+			price: product.price,
+			originalPrice: product.originalPrice,
+			imageUrl: product.imageUrl,
+			category: product.category,
+			colors: product.colors,
+			sizes: product.sizes,
+		});
+
+		if (!validation.canAdd) {
+			toast.error(validation.reason || "Impossibile aggiungere al carrello");
+			return;
+		}
+
+		// Converti il prodotto in CartItem
+		const cartItem = convertProductToCartItem({
+			id: product.id,
+			title: product.title,
+			slug: product.slug,
+			price: product.price,
+			originalPrice: product.originalPrice,
+			imageUrl: product.imageUrl,
+			category: product.category,
+			colors: product.colors,
+			sizes: product.sizes,
+		});
+
+		// Aggiungi al carrello
+		addItem(cartItem);
+
+		// Mostra messaggio di successo
+		toast.success(getAddToCartSuccessMessage(product.title));
+	};
+
+	const handleToggleFavorite = (product: ProductListItem) => {
+		// TODO: Implementare funzionalità wishlist
+		console.log(`Toggled favorite for ${product.title}`);
+		toast.info("Funzionalità wishlist in arrivo!");
+	};
+
 	return (
 		<div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
 			{products.map((product) => (
@@ -23,10 +73,8 @@ const ProductList = ({ products }: { products: ProductListItem[] }) => {
 					isNew={product.isNew}
 					isSale={product.isSale}
 					href={product.href}
-					onAddToCart={() => console.log(`Added ${product.title} to cart`)}
-					onToggleFavorite={() =>
-						console.log(`Toggled favorite for ${product.title}`)
-					}
+					onAddToCart={() => handleAddToCart(product)}
+					onToggleFavorite={() => handleToggleFavorite(product)}
 				/>
 			))}
 		</div>

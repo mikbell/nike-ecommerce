@@ -1,9 +1,10 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { Search, Heart, ShoppingCart } from "lucide-react";
+import { Search, Heart } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
 import Link from "next/link";
 import UserMenu from "./user-menu";
+import CartDrawer from "./cart/cart-drawer";
 
 interface User {
 	name: string;
@@ -54,12 +55,7 @@ const DesktopNav = ({
 					<Heart />
 				</Button>
 
-				<Button variant="ghost" className="relative">
-					<ShoppingCart />
-					<span className="absolute -top-1 -right-1 bg-red text-light-100 text-footnote rounded-full h-4 w-4 flex items-center justify-center">
-						0
-					</span>
-				</Button>
+				<CartDrawer />
 				<ModeToggle />
 			</div>
 		</>
