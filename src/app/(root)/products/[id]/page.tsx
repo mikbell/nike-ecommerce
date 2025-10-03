@@ -6,7 +6,7 @@ import ProductGallery from "@/components/ProductGallery";
 import SizePicker from "@/components/SizePicker";
 import CollapsibleSection from "@/components/CollapsibleSection";
 import Card from "@/components/Card";
-import { getProductDetail, getRelatedProducts } from "@/lib/data/mockProductDetails";
+import { getProductById, getRelatedProducts } from "@/lib/db/queries/products";
 
 interface ProductPageProps {
 	params: {
@@ -14,14 +14,14 @@ interface ProductPageProps {
 	};
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-	const product = getProductDetail(params.id);
+export default async function ProductPage({ params }: ProductPageProps) {
+	const product = await getProductById(params.id);
 
 	if (!product) {
 		notFound();
 	}
 
-	const relatedProducts = getRelatedProducts(params.id, 4);
+	const relatedProducts = await getRelatedProducts(params.id, 4);
 	const currentVariant = product.variants[0];
 	const fullStars = Math.floor(product.reviews.averageRating);
 	const hasHalfStar = product.reviews.averageRating % 1 >= 0.5;
