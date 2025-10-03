@@ -45,3 +45,19 @@ export const auth = betterAuth({
 	},
 	plugins: [nextCookies()],
 });
+
+// Funzione helper per le API routes
+export async function getUser() {
+	const { headers } = await import('next/headers');
+	const headersList = headers();
+	
+	try {
+		const session = await auth.api.getSession({
+			headers: headersList,
+		});
+		return session?.user || null;
+	} catch (error) {
+		console.error('Get user error:', error);
+		return null;
+	}
+}

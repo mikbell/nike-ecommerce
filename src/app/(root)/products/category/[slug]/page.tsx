@@ -1,8 +1,10 @@
 import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import Filters from "@/components/filters";
 import Sort from "@/components/sort";
 import { Badge } from "@/components/ui/badge";
-import { getAllProducts } from "@/lib/db/queries/products";
+import { getProductsByCategory } from "@/lib/db/queries/products";
+import { getCategoryBySlug, getAllCategories } from "@/lib/db/queries/categories";
 import {
 	parseFiltersFromQuery,
 	stringifyFiltersToQuery,
@@ -10,9 +12,9 @@ import {
 import { X } from "lucide-react";
 import Link from "next/link";
 import ProductList from "@/components/product-list";
+import Breadcrumbs from "@/components/breadcrumbs";
 
-type Product = Awaited<ReturnType<typeof getAllProducts>>[0];
-
+type Product = Awaited<ReturnType<typeof getProductsByCategory>>[0];
 type SearchParams = { [key: string]: string | string[] | undefined };
 
 function filterProducts(
@@ -71,13 +73,30 @@ function sortProducts(products: Product[], sortBy: string) {
 	}
 }
 
-export default async function ProductsPage({
+// Generate static paths for all categories
+export async function generateStaticParams() {
+	const categories = await getAllCategories();
+	return categories.map((category) => ({
+		slug: category.slug,
+	}));
+}
+
+export default async function CategoryPage({
+	params,
 	searchParams,
 }: {
+	params: Promise<{ slug: string }>;
 	searchParams: Promise<SearchParams>;
 }) {
+	const resolvedParams = await params;
 	const resolvedSearchParams = await searchParams;
-	const allProducts = await getAllProducts();
+	const category = await getCategoryBySlug(resolvedParams.slug);
+	
+	if (!category) {
+		notFound();
+	}
+
+	const allProducts = await getProductsByCategory(resolvedParams.slug);
 	const filters = parseFiltersFromQuery(resolvedSearchParams);
 	const filteredProducts = filterProducts(allProducts, filters);
 	const sortedProducts = sortProducts(filteredProducts, filters.sort || "featured");
@@ -88,26 +107,72 @@ export default async function ProductsPage({
 		filters.colors?.length ||
 		filters.priceRanges?.length;
 
+	// Build breadcrumb items
+	const breadcrumbItems = [
+		{ label: "Products", href: "/products" },
+	];
+
+	// Add parent category if exists
+	if (category.parent) {
+		breadcrumbItems.push({
+			label: category.parent.name,
+			href: `/products/category/${category.parent.slug}`,
+		});
+	}
+
+	// Add current category (no href as it's the current page)
+	breadcrumbItems.push({
+		label: category.name,
+	});
+
 	return (
 		<div className="min-h-screen flex flex-col">
 			<main className="flex-1 py-8">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+					{/* Breadcrumbs */}
+					<div className="mb-6">
+						<Breadcrumbs items={breadcrumbItems} />
+					</div>
+
+					{/* Header */}
 					<div className="mb-8">
 						<h1 className="text-heading-1 font-jost text-dark-900 mb-2">
-							All Products
+							{category.name}
 						</h1>
 						<p className="text-body text-dark-700">
 							Showing {sortedProducts.length} of {allProducts.length} products
 						</p>
+						
+						{/* Subcategories */}
+						{category.children && category.children.length > 0 && (
+							<div className="mt-4">
+								<h2 className="text-body-medium font-medium text-dark-900 mb-3">
+									Shop by category:
+								</h2>
+								<div className="flex flex-wrap gap-2">
+									{category.children.map((subcategory) => (
+										<Link
+											key={subcategory.id}
+											href={`/products/category/${subcategory.slug}`}
+										>
+											<Badge variant="outline" className="cursor-pointer hover:bg-dark-100">
+												{subcategory.name}
+											</Badge>
+										</Link>
+									))}
+								</div>
+							</div>
+						)}
 					</div>
 
+					{/* Active Filters */}
 					{hasActiveFilters && (
 						<div className="mb-6 flex flex-wrap items-center gap-2">
 							<span className="text-body text-dark-700">Active filters:</span>
 							{filters.genders?.map((gender) => (
 								<Link
 									key={gender}
-									href={`/products?${stringifyFiltersToQuery({
+									href={`/products/category/${resolvedParams.slug}?${stringifyFiltersToQuery({
 										...filters,
 										genders: filters.genders?.filter((g) => g !== gender),
 									})}`}>
@@ -119,7 +184,7 @@ export default async function ProductsPage({
 							{filters.sizes?.map((size) => (
 								<Link
 									key={size}
-									href={`/products?${stringifyFiltersToQuery({
+									href={`/products/category/${resolvedParams.slug}?${stringifyFiltersToQuery({
 										...filters,
 										sizes: filters.sizes?.filter((s) => s !== size),
 									})}`}>
@@ -131,7 +196,7 @@ export default async function ProductsPage({
 							{filters.colors?.map((color) => (
 								<Link
 									key={color}
-									href={`/products?${stringifyFiltersToQuery({
+									href={`/products/category/${resolvedParams.slug}?${stringifyFiltersToQuery({
 										...filters,
 										colors: filters.colors?.filter((c) => c !== color),
 									})}`}>
@@ -152,7 +217,7 @@ export default async function ProductsPage({
 								return (
 									<Link
 										key={range}
-										href={`/products?${stringifyFiltersToQuery({
+										href={`/products/category/${resolvedParams.slug}?${stringifyFiltersToQuery({
 											...filters,
 											priceRanges: filters.priceRanges?.filter((r) => r !== range),
 										})}`}>
@@ -165,6 +230,7 @@ export default async function ProductsPage({
 						</div>
 					)}
 
+					{/* Content */}
 					<div className="flex flex-col lg:flex-row gap-8">
 						<aside className="lg:w-64 flex-shrink-0">
 							<Suspense fallback={<div>Loading filters...</div>}>
@@ -179,9 +245,23 @@ export default async function ProductsPage({
 								</Suspense>
 							</div>
 
-							<Suspense fallback={<div>Loading products...</div>}>
-								<ProductList products={sortedProducts} />
-							</Suspense>
+							{sortedProducts.length === 0 ? (
+								<div className="text-center py-12">
+									<p className="text-body text-dark-600 mb-4">
+										No products found in this category.
+									</p>
+									<Link
+										href="/products"
+										className="text-dark-900 underline hover:no-underline"
+									>
+										View all products
+									</Link>
+								</div>
+							) : (
+								<Suspense fallback={<div>Loading products...</div>}>
+									<ProductList products={sortedProducts} />
+								</Suspense>
+							)}
 						</div>
 					</div>
 				</div>

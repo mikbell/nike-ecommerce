@@ -18,6 +18,12 @@ export const payments = pgTable("payments", {
 		.default("initiated"),
 	paidAt: timestamp("paidAt"),
 	transactionId: text("transactionId"),
+	stripePaymentIntentId: text("stripePaymentIntentId"),
+	stripeSessionId: text("stripeSessionId"),
+	amount: text("amount").notNull(), // Importo in centesimi come stringa
+	currency: text("currency").notNull().default('eur'),
+	stripeWebhookEventId: text("stripeWebhookEventId"),
+	createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
 export const paymentsRelations = relations(payments, ({ one }) => ({

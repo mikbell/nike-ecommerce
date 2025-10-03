@@ -8,6 +8,7 @@ import {
 	Package,
 	RotateCcw,
 	ShoppingCart,
+	ShoppingBag,
 } from "lucide-react";
 import ProductGallery from "@/components/product-gallery";
 import SizePicker from "@/components/size-picker";
@@ -44,7 +45,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		: 0;
 
 	return (
-		<div className="min-h-screen bg-light-100">
+		<div className="min-h-screen bg-background">
 			<main className="py-8">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
@@ -122,9 +123,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 							</div>
 
 							<div className="flex flex-col sm:flex-row gap-3">
-								<Button variant="outline" className="flex-1 h-12 text-body-medium" size="lg">
-									<ShoppingCart className="w-5 h-5 mr-2" />
-									Add to Cart
+								<Button className="flex-1 h-12 text-body-medium" size="lg">
+									<ShoppingBag className="w-5 h-5 mr-2" />
+									Add to Bag
 								</Button>
 								<Button variant="outline" size="lg" className="h-12">
 									<Heart className="w-5 h-5" />

@@ -3,10 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Search, Heart, Menu, X, User, LogOut } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
-import CartDrawer from "./cart/cart-drawer";
+import CartDrawer from "@/components/cart/cart-drawer";
 
 const NavLink = ({
 	href,
@@ -56,10 +56,7 @@ const MobileNav = ({ navLinks, currentUser }: MobileNavProps) => {
 
 	return (
 		<div className="md:hidden">
-			<Button
-				variant="ghost"
-				onClick={toggleMenu}
-				aria-label="Toggle menu">
+			<Button variant="ghost" onClick={toggleMenu} aria-label="Toggle menu">
 				{isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
 			</Button>
 			{isMenuOpen && (
@@ -71,12 +68,13 @@ const MobileNav = ({ navLinks, currentUser }: MobileNavProps) => {
 									<User className="h-5 w-5" />
 									<span className="font-medium">{currentUser.name}</span>
 								</div>
-								<p className="text-sm text-muted-foreground mb-2">{currentUser.email}</p>
-								<Button 
-									variant="ghost" 
+								<p className="text-sm text-muted-foreground mb-2">
+									{currentUser.email}
+								</p>
+								<Button
+									variant="ghost"
 									className="w-full justify-start"
-									onClick={handleSignOut}
-								>
+									onClick={handleSignOut}>
 									<LogOut className="mr-2 h-4 w-4" />
 									Sign Out
 								</Button>
@@ -84,10 +82,14 @@ const MobileNav = ({ navLinks, currentUser }: MobileNavProps) => {
 						) : (
 							<div className="border-b border-border pb-3 mb-3 space-y-2">
 								<Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
-									<Button variant="ghost" className="w-full">Sign in</Button>
+									<Button variant="ghost" className="w-full">
+										Sign in
+									</Button>
 								</Link>
 								<Link href="/sign-up" onClick={() => setIsMenuOpen(false)}>
-									<Button variant="ghost" className="w-full">Sign up</Button>
+									<Button variant="ghost" className="w-full">
+										Sign up
+									</Button>
 								</Link>
 							</div>
 						)}

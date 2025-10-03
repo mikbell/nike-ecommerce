@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Button } from "./ui/button";
-import { User, LogOut, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, LogOut, ChevronDown, List } from "lucide-react";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -10,9 +10,10 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface UserMenuProps {
 	userName: string;
@@ -52,15 +53,19 @@ export default function UserMenu({ userName, userEmail }: UserMenuProps) {
 					{userEmail}
 				</DropdownMenuLabel>
 
+				<DropdownMenuItem className="cursor-pointer" asChild>
+					<Link href="/account/orders">
+						<List className="mr-2 h-4 w-4" />
+						<span className="text-sm">I miei ordini</span>
+					</Link>
+				</DropdownMenuItem>
+
 				<DropdownMenuSeparator />
 
 				{/* Sign Out Action */}
-				<DropdownMenuItem
-					onClick={handleSignOut}
-					className="cursor-pointer" // Add a cursor to reinforce interactivity
-				>
+				<DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
 					<LogOut className="mr-2 h-4 w-4" />
-					Sign Out
+					<span className="text-sm">Sign Out</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

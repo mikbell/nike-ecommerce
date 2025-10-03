@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 
-import Logo from "./logo";
-import MobileNav from "./mobile-nav";
-import DesktopNav from "./desktop-nav";
+import Logo from "@/components/logo";
+import MobileNav from "@/components/navbar/mobile-nav";
+import DesktopNav from "@/components/navbar/desktop-nav";
+import CategoryMenu from "@/components/category-menu";
 import { getCurrentUser } from "@/lib/auth/actions";
 
 interface NavbarProps {
@@ -11,11 +12,11 @@ interface NavbarProps {
 
 const Navbar = async ({ className }: NavbarProps) => {
 	const navLinks = [
-		{ href: "/new", label: "New & Featured" },
-		{ href: "/men", label: "Men" },
-		{ href: "/women", label: "Women" },
-		{ href: "/kids", label: "Kids" },
-		{ href: "/sale", label: "Sale" },
+		{ href: "/products?sort=newest", label: "New & Featured" },
+		{ href: "/products/category/men", label: "Men" },
+		{ href: "/products/category/women", label: "Women" },
+		{ href: "/products/category/kids", label: "Kids" },
+		{ href: "/products?priceRanges=0-50,50-100", label: "Sale" },
 	];
 
 	const currentUser = await getCurrentUser();
@@ -29,6 +30,10 @@ const Navbar = async ({ className }: NavbarProps) => {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center h-16">
 					<Logo />
+					{/* Desktop Navigation with Category Menu */}
+					<div className="hidden md:flex items-center flex-1 justify-center">
+						<CategoryMenu />
+					</div>
 					<DesktopNav navLinks={navLinks} currentUser={currentUser} />
 					<MobileNav navLinks={navLinks} currentUser={currentUser} />
 				</div>

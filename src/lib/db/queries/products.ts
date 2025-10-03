@@ -376,6 +376,88 @@ export async function getRelatedProducts(currentProductId: string, limit: number
 	return relatedWithDetails;
 }
 
+export async function getProductsByCategory(categorySlug: string) {
+	try {
+		// First get the category
+		const category = await db.query.categories.findFirst({
+			where: (categories, { eq }) => eq(categories.slug, categorySlug),
+			with: {
+				children: true,
+			},
+		});
+
+		if (!category) {
+			return [];
+		}
+
+		// Get all category IDs (including subcategories)
+		const categoryIds = [category.id, ...category.children.map(child => child.id)];
+
+		// Get products from this category and its subcategories
+		const products = await db.query.products.findMany({
+			where: (products, { inArray }) => inArray(products.categoryId, categoryIds),
+			with: {
+				category: true,
+				gender: true,
+				brand: true,
+			},
+		});
+
+		if (products.length === 0) {
+			return [];
+		}
+
+		const productsWithDetails = await Promise.all(
+			products.map(async (product) => {
+				const variants = await db.query.productVariants.findMany({
+					where: (productVariants, { eq }) => eq(productVariants.productId, product.id),
+					with: {
+						color: true,
+						size: true,
+					},
+				});
+
+				const images = await db.query.productImages.findMany({
+					where: (productImages, { eq }) => eq(productImages.productId, product.id),
+					orderBy: (productImages, { asc }) => [asc(productImages.sortOrder)],
+				});
+
+				const uniqueColors = Array.from(new Set(variants.map((v) => v.color.name)));
+				const uniqueSizes = Array.from(new Set(variants.map((v) => v.size.name)));
+				
+				const hasSale = variants.some((v) => v.salePrice !== null);
+				const basePrice = variants.length > 0 ? parseFloat(variants[0].price) : 0;
+				const salePrice = hasSale && variants[0].salePrice ? parseFloat(variants[0].salePrice) : null;
+
+				const primaryImage = images.find((img) => img.isPrimary) || images[0];
+
+				return {
+					id: product.id,
+					slug: product.slug,
+					title: product.name,
+					description: product.description || "",
+					price: salePrice || basePrice,
+					originalPrice: hasSale && salePrice ? basePrice : undefined,
+					imageUrl: primaryImage?.url || "/shoes/shoe-1.jpg",
+					category: product.category.name,
+					gender: product.gender.label,
+					colors: uniqueColors,
+					sizes: uniqueSizes,
+					isNew: isNewProduct(product.createdAt),
+					isSale: hasSale,
+					href: `/products/${product.slug}`,
+				};
+			})
+		);
+
+		return productsWithDetails;
+	} catch (error) {
+		console.error('💥 Error in getProductsByCategory:', error);
+		// Return empty array instead of throwing to prevent page crash
+		return [];
+	}
+}
+
 function isNewProduct(createdAt: Date): boolean {
 	const thirtyDaysAgo = new Date();
 	thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
