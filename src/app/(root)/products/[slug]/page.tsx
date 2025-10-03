@@ -2,11 +2,19 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingBag, Star, StarHalf, Package, RotateCcw } from "lucide-react";
+<<<<<<< HEAD:src/app/(root)/products/[slug]/page.tsx
 import ProductGallery from "@/components/product-gallery";
 import SizePicker from "@/components/size-picker";
 import CollapsibleSection from "@/components/collapsible-section";
 import Card from "@/components/card";
 import { getProductDetail, getRelatedProducts } from "@/lib/data/mockProductDetails";
+=======
+import ProductGallery from "@/components/ProductGallery";
+import SizePicker from "@/components/SizePicker";
+import CollapsibleSection from "@/components/CollapsibleSection";
+import Card from "@/components/Card";
+import { getProductById, getRelatedProducts } from "@/lib/db/queries/products";
+>>>>>>> 2ada997d2ab6a13b8c8f9dc3f0bc967d244b513e:src/app/(root)/products/[id]/page.tsx
 
 interface ProductPageProps {
 	params: {
@@ -14,14 +22,23 @@ interface ProductPageProps {
 	};
 }
 
+<<<<<<< HEAD:src/app/(root)/products/[slug]/page.tsx
 export default function ProductPage({ params }: ProductPageProps) {
 	const product = getProductDetail(params.slug);
+=======
+export default async function ProductPage({ params }: ProductPageProps) {
+	const product = await getProductById(params.id);
+>>>>>>> 2ada997d2ab6a13b8c8f9dc3f0bc967d244b513e:src/app/(root)/products/[id]/page.tsx
 
 	if (!product) {
 		notFound();
 	}
 
+<<<<<<< HEAD:src/app/(root)/products/[slug]/page.tsx
 	const relatedProducts = getRelatedProducts(params.slug, 4);
+=======
+	const relatedProducts = await getRelatedProducts(params.id, 4);
+>>>>>>> 2ada997d2ab6a13b8c8f9dc3f0bc967d244b513e:src/app/(root)/products/[id]/page.tsx
 	const currentVariant = product.variants[0];
 	const fullStars = Math.floor(product.reviews.averageRating);
 	const hasHalfStar = product.reviews.averageRating % 1 >= 0.5;
