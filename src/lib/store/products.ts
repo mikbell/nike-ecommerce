@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 export interface Product {
   id: number;
+  slug: string | null;
   name: string;
   description: string | null;
   price: string;
@@ -10,7 +11,10 @@ export interface Product {
   brand: string | null;
   size: string | null;
   color: string | null;
+  gender: string | null;
   stock: number | null;
+  isNew: boolean;
+  isSale: boolean;
   createdAt: Date | null;
   updatedAt: Date | null;
 }

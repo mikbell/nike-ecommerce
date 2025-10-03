@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 const Hero = () => {
 	return (
@@ -26,8 +27,12 @@ const Hero = () => {
 				</p>
 
 				<div className="mt-8 flex items-center justify-center gap-4">
-					<Button>Shop Now</Button>
-					<Button variant="outline">Explore Collection</Button>
+					<Link href="/products">
+						<Button>Shop Now</Button>
+					</Link>
+					<Link href="/products">
+						<Button variant="outline">Explore Collection</Button>
+					</Link>
 				</div>
 			</div>
 		</section>

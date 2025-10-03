@@ -2,26 +2,26 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingBag, Star, StarHalf, Package, RotateCcw } from "lucide-react";
-import ProductGallery from "@/components/ProductGallery";
-import SizePicker from "@/components/SizePicker";
-import CollapsibleSection from "@/components/CollapsibleSection";
-import Card from "@/components/Card";
+import ProductGallery from "@/components/product-gallery";
+import SizePicker from "@/components/size-picker";
+import CollapsibleSection from "@/components/collapsible-section";
+import Card from "@/components/card";
 import { getProductDetail, getRelatedProducts } from "@/lib/data/mockProductDetails";
 
 interface ProductPageProps {
 	params: {
-		id: string;
+		slug: string;
 	};
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
-	const product = getProductDetail(params.id);
+	const product = getProductDetail(params.slug);
 
 	if (!product) {
 		notFound();
 	}
 
-	const relatedProducts = getRelatedProducts(params.id, 4);
+	const relatedProducts = getRelatedProducts(params.slug, 4);
 	const currentVariant = product.variants[0];
 	const fullStars = Math.floor(product.reviews.averageRating);
 	const hasHalfStar = product.reviews.averageRating % 1 >= 0.5;
@@ -194,7 +194,6 @@ export default function ProductPage({ params }: ProductPageProps) {
 									originalPrice={relatedProduct.originalPrice}
 									imageUrl={relatedProduct.variants[0]?.images[0] || "/shoes/shoe-1.jpg"}
 									category={relatedProduct.category}
-									gender={relatedProduct.gender}
 									colors={relatedProduct.variants.map(v => v.color)}
 									sizes={relatedProduct.variants[0]?.sizes.map(s => s.size) || []}
 									isNew={relatedProduct.isNew}

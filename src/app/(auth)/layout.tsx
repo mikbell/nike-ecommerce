@@ -23,7 +23,7 @@ export default function AuthLayout({
 				<div className="relative z-10 flex flex-col justify-between p-12">
 					{/* Logo (Ora usa colori semantici: card/card-foreground) */}
 					<div className="flex items-center">
-						<Logo />
+						<Logo className="!text-background"/>
 					</div>
 
 					{/* Main content */}

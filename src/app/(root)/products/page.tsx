@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-import Card from "@/components/Card";
-import Filters from "@/components/Filters";
-import Sort from "@/components/Sort";
+import Filters from "@/components/filters";
+import Sort from "@/components/sort";
 import { Badge } from "@/components/ui/badge";
 import { MOCK_PRODUCTS, type MockProduct } from "@/lib/data/mockProducts";
 import {
@@ -10,6 +9,7 @@ import {
 } from "@/lib/utils/query";
 import { X } from "lucide-react";
 import Link from "next/link";
+import ProductList from "@/components/product-list";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
@@ -173,34 +173,9 @@ export default function ProductsPage({
 								</Suspense>
 							</div>
 
-							{sortedProducts.length > 0 ? (
-								<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-									{sortedProducts.map((product) => (
-										<Card
-											key={product.id}
-											{...product}
-											onAddToCart={() =>
-												console.log(`Added ${product.title} to cart`)
-											}
-											onToggleFavorite={() =>
-												console.log(`Toggled favorite for ${product.title}`)
-											}
-										/>
-									))}
-								</div>
-							) : (
-								<div className="text-center py-16">
-									<p className="text-heading-3 font-jost text-dark-900 mb-2">
-										No products found
-									</p>
-									<p className="text-body text-dark-700 mb-6">
-										Try adjusting your filters to see more products
-									</p>
-									<Link href="/products">
-										<Badge>Clear all filters</Badge>
-									</Link>
-								</div>
-							)}
+							<Suspense fallback={<div>Loading products...</div>}>
+								<ProductList products={sortedProducts} />
+							</Suspense>
 						</div>
 					</div>
 				</div>

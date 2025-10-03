@@ -1,8 +1,11 @@
+"use client";
 import ProductList from "@/components/product-list";
 import Hero from "@/components/hero";
 import { Badge } from "@/components/ui/badge";
+import { MOCK_PRODUCTS, type MockProduct } from "@/lib/data/mockProducts";
 
-const Home = async () => {
+const Home = () => {
+	const products: MockProduct[] = MOCK_PRODUCTS;
 	return (
 		<div className="min-h-screen flex flex-col">
 			<main className="flex-1">
@@ -22,7 +25,7 @@ const Home = async () => {
 							</p>
 						</div>
 
-						<ProductList />
+						<ProductList products={products}/>
 					</div>
 				</section>
 			</main>
