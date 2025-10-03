@@ -10,19 +10,19 @@ export const products = pgTable("products", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	name: text("name").notNull(),
 	description: text("description"),
-	categoryId: uuid("category_id")
+	categoryId: uuid("categoryId")
 		.notNull()
 		.references(() => categories.id),
-	genderId: uuid("gender_id")
+	genderId: uuid("genderId")
 		.notNull()
 		.references(() => genders.id),
-	brandId: uuid("brand_id")
+	brandId: uuid("brandId")
 		.notNull()
 		.references(() => brands.id),
-	isPublished: boolean("is_published").notNull().default(true),
-	defaultVariantId: uuid("default_variant_id"),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	isPublished: boolean("isPublished").notNull().default(true),
+	defaultVariantId: uuid("defaultVariantId"),
+	createdAt: timestamp("createdAt").notNull().defaultNow(),
+	updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
 export const productsRelations = relations(products, ({ one }) => ({

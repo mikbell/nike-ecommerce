@@ -5,17 +5,17 @@ import { z } from "zod";
 import { products } from "./product";
 import { productVariants } from "./variants";
 
-export const productImages = pgTable("product_images", {
+export const productImages = pgTable("productImages", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	productId: uuid("product_id")
+	productId: uuid("productId")
 		.notNull()
 		.references(() => products.id, { onDelete: "cascade" }),
-	variantId: uuid("variant_id").references(() => productVariants.id, {
+	variantId: uuid("variantId").references(() => productVariants.id, {
 		onDelete: "cascade",
 	}),
 	url: text("url").notNull(),
-	sortOrder: integer("sort_order").notNull().default(0),
-	isPrimary: boolean("is_primary").notNull().default(false),
+	sortOrder: integer("sortOrder").notNull().default(0),
+	isPrimary: boolean("isPrimary").notNull().default(false),
 });
 
 export const productImagesRelations = relations(productImages, ({ one }) => ({

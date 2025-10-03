@@ -15,20 +15,20 @@ export const orderStatusEnum = [
 
 export const orders = pgTable("orders", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	userId: uuid("user_id")
+	userId: uuid("userId")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	status: text("status", { enum: orderStatusEnum })
 		.notNull()
 		.default("pending"),
-	totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
-	shippingAddressId: uuid("shipping_address_id")
+	totalAmount: numeric("totalAmount", { precision: 10, scale: 2 }).notNull(),
+	shippingAddressId: uuid("shippingAddressId")
 		.notNull()
 		.references(() => addresses.id),
-	billingAddressId: uuid("billing_address_id")
+	billingAddressId: uuid("billingAddressId")
 		.notNull()
 		.references(() => addresses.id),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
+	createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
 export const ordersRelations = relations(orders, ({ one }) => ({

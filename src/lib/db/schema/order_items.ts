@@ -5,16 +5,16 @@ import { z } from "zod";
 import { orders } from "./orders";
 import { productVariants } from "./variants";
 
-export const orderItems = pgTable("order_items", {
+export const orderItems = pgTable("orderItems", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	orderId: uuid("order_id")
+	orderId: uuid("orderId")
 		.notNull()
 		.references(() => orders.id, { onDelete: "cascade" }),
-	productVariantId: uuid("product_variant_id")
+	productVariantId: uuid("productVariantId")
 		.notNull()
 		.references(() => productVariants.id),
 	quantity: integer("quantity").notNull(),
-	priceAtPurchase: numeric("price_at_purchase", {
+	priceAtPurchase: numeric("priceAtPurchase", {
 		precision: 10,
 		scale: 2,
 	}).notNull(),

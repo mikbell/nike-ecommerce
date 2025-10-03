@@ -5,12 +5,12 @@ import { z } from "zod";
 import { products } from "./product";
 import { collections } from "./collections";
 
-export const productCollections = pgTable("product_collections", {
+export const productCollections = pgTable("productCollections", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	productId: uuid("product_id")
+	productId: uuid("productId")
 		.notNull()
 		.references(() => products.id, { onDelete: "cascade" }),
-	collectionId: uuid("collection_id")
+	collectionId: uuid("collectionId")
 		.notNull()
 		.references(() => collections.id, { onDelete: "cascade" }),
 });

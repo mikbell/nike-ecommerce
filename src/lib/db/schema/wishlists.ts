@@ -7,13 +7,13 @@ import { products } from "./product";
 
 export const wishlists = pgTable("wishlists", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	userId: uuid("user_id")
+	userId: uuid("userId")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
-	productId: uuid("product_id")
+	productId: uuid("productId")
 		.notNull()
 		.references(() => products.id, { onDelete: "cascade" }),
-	addedAt: timestamp("added_at").notNull().defaultNow(),
+	addedAt: timestamp("addedAt").notNull().defaultNow(),
 });
 
 export const wishlistsRelations = relations(wishlists, ({ one }) => ({

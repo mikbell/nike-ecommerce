@@ -7,11 +7,11 @@ export const discountTypeEnum = ["percentage", "fixed"] as const;
 export const coupons = pgTable("coupons", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	code: text("code").notNull().unique(),
-	discountType: text("discount_type", { enum: discountTypeEnum }).notNull(),
-	discountValue: numeric("discount_value", { precision: 10, scale: 2 }).notNull(),
-	expiresAt: timestamp("expires_at").notNull(),
-	maxUsage: integer("max_usage").notNull(),
-	usedCount: integer("used_count").notNull().default(0),
+	discountType: text("discountType", { enum: discountTypeEnum }).notNull(),
+	discountValue: numeric("discountValue", { precision: 10, scale: 2 }).notNull(),
+	expiresAt: timestamp("expiresAt").notNull(),
+	maxUsage: integer("maxUsage").notNull(),
+	usedCount: integer("usedCount").notNull().default(0),
 });
 
 export const insertCouponSchema = createInsertSchema(coupons);

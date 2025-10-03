@@ -3,7 +3,7 @@ import { user } from './user';
 import { uuid } from 'drizzle-orm/pg-core';
 
 export const session = pgTable('session', {
-  id: uuid('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
   token: text('token').notNull().unique(),
   ipAddress: text('ipAddress'),

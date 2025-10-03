@@ -6,7 +6,7 @@ export const sizes = pgTable("sizes", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	name: text("name").notNull(),
 	slug: text("slug").notNull().unique(),
-	sortOrder: integer("sort_order").notNull().default(0),
+	sortOrder: integer("sortOrder").notNull().default(0),
 });
 
 export const insertSizeSchema = createInsertSchema(sizes);

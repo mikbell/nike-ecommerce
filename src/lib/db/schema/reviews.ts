@@ -7,15 +7,15 @@ import { user } from "./user";
 
 export const reviews = pgTable("reviews", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	productId: uuid("product_id")
+	productId: uuid("productId")
 		.notNull()
 		.references(() => products.id, { onDelete: "cascade" }),
-	userId: uuid("user_id")
+	userId: uuid("userId")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	rating: integer("rating").notNull(),
 	comment: text("comment"),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
+	createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({

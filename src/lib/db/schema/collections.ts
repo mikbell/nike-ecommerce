@@ -6,7 +6,7 @@ export const collections = pgTable("collections", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	name: text("name").notNull(),
 	slug: text("slug").notNull().unique(),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
+	createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
 export const insertCollectionSchema = createInsertSchema(collections);

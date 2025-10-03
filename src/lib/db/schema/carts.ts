@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -7,10 +7,10 @@ import { guest } from "./guest";
 
 export const carts = pgTable("carts", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	userId: uuid("user_id").references(() => user.id, { onDelete: "cascade" }),
-	guestId: text("guest_id").references(() => guest.id, { onDelete: "cascade" }),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	userId: uuid("userId").references(() => user.id, { onDelete: "cascade" }),
+	guestId: uuid("guestId").references(() => guest.id, { onDelete: "cascade" }),
+	createdAt: timestamp("createdAt").notNull().defaultNow(),
+	updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
 export const cartsRelations = relations(carts, ({ one }) => ({

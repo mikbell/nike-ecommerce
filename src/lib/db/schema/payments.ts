@@ -16,8 +16,8 @@ export const payments = pgTable("payments", {
 	status: text("status", { enum: paymentStatusEnum })
 		.notNull()
 		.default("initiated"),
-	paidAt: timestamp("paid_at"),
-	transactionId: text("transaction_id"),
+	paidAt: timestamp("paidAt"),
+	transactionId: text("transactionId"),
 });
 
 export const paymentsRelations = relations(payments, ({ one }) => ({

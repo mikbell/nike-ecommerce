@@ -8,7 +8,7 @@ export const addressTypeEnum = ["billing", "shipping"] as const;
 
 export const addresses = pgTable("addresses", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	userId: uuid("user_id")
+	userId: uuid("userId")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	type: text("type", { enum: addressTypeEnum }).notNull(),
@@ -17,8 +17,8 @@ export const addresses = pgTable("addresses", {
 	city: text("city").notNull(),
 	state: text("state").notNull(),
 	country: text("country").notNull(),
-	postalCode: text("postal_code").notNull(),
-	isDefault: boolean("is_default").notNull().default(false),
+	postalCode: text("postalCode").notNull(),
+	isDefault: boolean("isDefault").notNull().default(false),
 });
 
 export const addressesRelations = relations(addresses, ({ one }) => ({

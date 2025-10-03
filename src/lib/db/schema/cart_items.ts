@@ -5,12 +5,12 @@ import { z } from "zod";
 import { carts } from "./carts";
 import { productVariants } from "./variants";
 
-export const cartItems = pgTable("cart_items", {
+export const cartItems = pgTable("cartItems", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	cartId: uuid("cart_id")
+	cartId: uuid("cartId")
 		.notNull()
 		.references(() => carts.id, { onDelete: "cascade" }),
-	productVariantId: uuid("product_variant_id")
+	productVariantId: uuid("productVariantId")
 		.notNull()
 		.references(() => productVariants.id, { onDelete: "cascade" }),
 	quantity: integer("quantity").notNull().default(1),
