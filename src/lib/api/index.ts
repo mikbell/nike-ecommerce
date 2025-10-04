@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { ApiResponse, PaginatedResponse, AppError } from '@/types';
-import { getErrorMessage } from '@/lib/utils';
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'An unknown error occurred';
+}
 
 // === Error Classes ===
 export class ApiError extends Error implements AppError {
