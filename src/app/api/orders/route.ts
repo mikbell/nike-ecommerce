@@ -55,19 +55,32 @@ function generateOrderNumber(): string {
 }
 
 async function validateOrderItems(items: CreateOrderInput['items']) {
-  // TODO: In a real application, validate that:
-  // 1. Products exist and are available
-  // 2. Variants exist for the products
-  // 3. Quantities are within stock limits
-  // 4. Prices match current prices
+  for (const item of items) {
+    if (!item.productId || !item.variantId || item.quantity <= 0 || item.price <= 0) {
+      return false;
+    }
+
+    const variant = await db.query.productVariants.findFirst({
+      where: (variants, { eq }) => eq(variants.id, item.variantId),
+      with: {
+        product: true
+      }
+    });
+
+    if (!variant) {
+      return false;
+    }
+
+    if (variant.productId !== item.productId) {
+      return false;
+    }
+
+    if (variant.inStock < item.quantity) {
+      return false;
+    }
+  }
   
-  // For now, we'll just ensure the data structure is correct
-  return items.every(item => 
-    item.productId && 
-    item.variantId && 
-    item.quantity > 0 && 
-    item.price > 0
-  );
+  return true;
 }
 
 // === API Handlers ===

@@ -27,17 +27,17 @@ export interface Cart {
 
 export interface CartStore extends Cart {
 	// Actions
-	addItem: (item: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number }) => void;
-	removeItem: (itemId: string) => void;
-	updateQuantity: (itemId: string, quantity: number) => void;
-	clearCart: () => void;
+	addItem: (item: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number }) => Promise<void>;
+	removeItem: (itemId: string) => Promise<void>;
+	updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+	clearCart: () => Promise<void>;
 	getItemQuantity: (productId: string, variantId: string) => number;
 	
 	// Computed
 	isEmpty: boolean;
 	
 	// Persistence
-	loadCart: () => void;
+	loadCart: () => Promise<void>;
 	saveCart: () => void;
 }
 
