@@ -1,166 +1,297 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { CartStore, CartItem } from '@/lib/types/cart';
+import { immer } from 'zustand/middleware/immer';
+import { subscribeWithSelector } from 'zustand/middleware';
+import { Cart, CartItem } from '@/types';
+import { formatPrice } from '@/lib/utils/index';
 
-const TAX_RATE = 0.22; // 22% IVA
-const FREE_SHIPPING_THRESHOLD = 50; // Spedizione gratuita sopra €50
+// === Constants ===
+const TAX_RATE = 0.22; // 22% VAT
+const FREE_SHIPPING_THRESHOLD = 50;
 const SHIPPING_COST = 7.99;
+const STORAGE_KEY = 'nike-cart-storage';
 
+// === Store Types ===
+interface CartActions {
+  // Item management
+  addItem: (item: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number }) => void;
+  removeItem: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
+  clearCart: () => void;
+  
+  // Utilities
+  getItemQuantity: (productId: string, variantId: string) => number;
+  getCartSummary: () => CartSummary;
+  hasItem: (productId: string, variantId?: string) => boolean;
+  
+  // Persistence
+  loadCart: () => void;
+  saveCart: () => void;
+}
+
+interface CartSummary {
+  itemCount: number;
+  subtotal: string;
+  tax: string;
+  shipping: string;
+  total: string;
+  hasItems: boolean;
+  qualifiesForFreeShipping: boolean;
+  amountToFreeShipping: number;
+}
+
+type CartStore = Cart & CartActions;
+
+// === Helper Functions ===
+function calculateTotals(items: CartItem[]) {
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const tax = subtotal * TAX_RATE;
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+  const total = subtotal + tax + shipping;
+
+  return {
+    totalItems,
+    subtotal: Math.round(subtotal * 100) / 100,
+    tax: Math.round(tax * 100) / 100,
+    shipping: Math.round(shipping * 100) / 100,
+    total: Math.round(total * 100) / 100,
+    discount: 0, // TODO: Implement discount logic
+  };
+}
+
+function generateCartItemId(productId: string, variantId: string): string {
+  return `${productId}-${variantId}-${Date.now()}`;
+}
+
+function validateCartItem(item: Omit<CartItem, 'id' | 'quantity'>): boolean {
+  return Boolean(
+    item.productId &&
+    item.variantId &&
+    item.name &&
+    item.price > 0 &&
+    item.maxQuantity > 0
+  );
+}
+
+// === Store Implementation ===
 export const useCartStore = create<CartStore>()(
-	persist(
-		(set, get) => ({
-			// Initial state
-			items: [],
-			totalItems: 0,
-			totalPrice: 0,
-			subtotal: 0,
-			tax: 0,
-			shipping: 0,
-			isEmpty: true,
+  subscribeWithSelector(
+    persist(
+      immer((set, get) => ({
+        // === Initial State ===
+        items: [],
+        totalItems: 0,
+        subtotal: 0,
+        discount: 0,
+        shipping: 0,
+        tax: 0,
+        total: 0,
 
-			// Actions
-			addItem: (itemData) => {
-				const { quantity = 1, ...item } = itemData;
-				
-				set((state) => {
-					// Controlla se l'item esiste già (stesso prodotto e variante)
-					const existingItemIndex = state.items.findIndex(
-						(cartItem) => 
-							cartItem.productId === item.productId && 
-							cartItem.variantId === item.variantId
-					);
+        // === Actions ===
+        addItem: (itemData) => {
+          const { quantity = 1, ...item } = itemData;
 
-					let newItems: CartItem[];
+          if (!validateCartItem(item)) {
+            console.error('Invalid cart item:', item);
+            return;
+          }
 
-					if (existingItemIndex >= 0) {
-						// Item esiste, aggiorna la quantità
-						newItems = state.items.map((cartItem, index) => {
-							if (index === existingItemIndex) {
-								const newQuantity = Math.min(
-									cartItem.quantity + quantity,
-									cartItem.inStock
-								);
-								return { ...cartItem, quantity: newQuantity };
-							}
-							return cartItem;
-						});
-					} else {
-						// Nuovo item, aggiungilo al carrello
-						const newItem: CartItem = {
-							...item,
-							id: `${item.productId}-${item.variantId}-${Date.now()}`,
-							quantity: Math.min(quantity, item.inStock)
-						};
-						newItems = [...state.items, newItem];
-					}
+          set((state) => {
+            // Check if item already exists
+            const existingItemIndex = state.items.findIndex(
+              (cartItem) => 
+                cartItem.productId === item.productId && 
+                cartItem.variantId === item.variantId
+            );
 
-					return {
-						...state,
-						items: newItems,
-						...calculateTotals(newItems)
-					};
-				});
-			},
+            if (existingItemIndex >= 0) {
+              // Update existing item quantity
+              const existingItem = state.items[existingItemIndex];
+              const newQuantity = Math.min(
+                existingItem.quantity + quantity,
+                existingItem.maxQuantity
+              );
+              state.items[existingItemIndex].quantity = newQuantity;
+            } else {
+              // Add new item
+              const newItem: CartItem = {
+                ...item,
+                id: generateCartItemId(item.productId, item.variantId),
+                quantity: Math.min(quantity, item.maxQuantity),
+              };
+              state.items.push(newItem);
+            }
 
-			removeItem: (itemId) => {
-				set((state) => {
-					const newItems = state.items.filter(item => item.id !== itemId);
-					return {
-						...state,
-						items: newItems,
-						...calculateTotals(newItems)
-					};
-				});
-			},
+            // Recalculate totals
+            const totals = calculateTotals(state.items);
+            state.totalItems = totals.totalItems;
+            state.subtotal = totals.subtotal;
+            state.tax = totals.tax;
+            state.shipping = totals.shipping;
+            state.total = totals.total;
+            state.discount = totals.discount;
+          });
+        },
 
-			updateQuantity: (itemId, quantity) => {
-				if (quantity <= 0) {
-					get().removeItem(itemId);
-					return;
-				}
+        removeItem: (itemId) => {
+          set((state) => {
+            state.items = state.items.filter(item => item.id !== itemId);
+            
+            // Recalculate totals
+            const totals = calculateTotals(state.items);
+            state.totalItems = totals.totalItems;
+            state.subtotal = totals.subtotal;
+            state.tax = totals.tax;
+            state.shipping = totals.shipping;
+            state.total = totals.total;
+            state.discount = totals.discount;
+          });
+        },
 
-				set((state) => {
-					const newItems = state.items.map(item => {
-						if (item.id === itemId) {
-							return { 
-								...item, 
-								quantity: Math.min(quantity, item.inStock) 
-							};
-						}
-						return item;
-					});
+        updateQuantity: (itemId, quantity) => {
+          if (quantity <= 0) {
+            get().removeItem(itemId);
+            return;
+          }
 
-					return {
-						...state,
-						items: newItems,
-						...calculateTotals(newItems)
-					};
-				});
-			},
+          set((state) => {
+            const item = state.items.find(item => item.id === itemId);
+            if (item) {
+              item.quantity = Math.min(quantity, item.maxQuantity);
+              
+              // Recalculate totals
+              const totals = calculateTotals(state.items);
+              state.totalItems = totals.totalItems;
+              state.subtotal = totals.subtotal;
+              state.tax = totals.tax;
+              state.shipping = totals.shipping;
+              state.total = totals.total;
+              state.discount = totals.discount;
+            }
+          });
+        },
 
-			clearCart: () => {
-				set({
-					items: [],
-					totalItems: 0,
-					totalPrice: 0,
-					subtotal: 0,
-					tax: 0,
-					shipping: 0,
-					isEmpty: true
-				});
-			},
+        clearCart: () => {
+          set((state) => {
+            state.items = [];
+            state.totalItems = 0;
+            state.subtotal = 0;
+            state.tax = 0;
+            state.shipping = 0;
+            state.total = 0;
+            state.discount = 0;
+          });
+        },
 
-			getItemQuantity: (productId, variantId) => {
-				const item = get().items.find(
-					item => item.productId === productId && item.variantId === variantId
-				);
-				return item?.quantity || 0;
-			},
+        getItemQuantity: (productId, variantId) => {
+          const item = get().items.find(
+            item => item.productId === productId && item.variantId === variantId
+          );
+          return item?.quantity || 0;
+        },
 
-			loadCart: () => {
-				// Questa funzione viene chiamata automaticamente da persist
-				// Possiamo aggiungere logica aggiuntiva se necessario
-			},
+        hasItem: (productId, variantId) => {
+          if (variantId) {
+            return get().items.some(
+              item => item.productId === productId && item.variantId === variantId
+            );
+          }
+          return get().items.some(item => item.productId === productId);
+        },
 
-			saveCart: () => {
-				// Questa funzione viene chiamata automaticamente da persist
-				// Possiamo aggiungere logica aggiuntiva se necessario
-			}
-		}),
-		{
-			name: 'nike-cart-storage',
-			storage: createJSONStorage(() => localStorage),
-			// Risincronizza i totali dopo il caricamento
-			onRehydrateStorage: () => (state) => {
-				if (state) {
-					const newTotals = calculateTotals(state.items);
-					state.totalItems = newTotals.totalItems;
-					state.totalPrice = newTotals.totalPrice;
-					state.subtotal = newTotals.subtotal;
-					state.tax = newTotals.tax;
-					state.shipping = newTotals.shipping;
-					state.isEmpty = newTotals.isEmpty;
-				}
-			}
-		}
-	)
+        getCartSummary: (): CartSummary => {
+          const state = get();
+          const hasItems = state.items.length > 0;
+          const qualifiesForFreeShipping = state.subtotal >= FREE_SHIPPING_THRESHOLD;
+          const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - state.subtotal);
+
+          return {
+            itemCount: state.totalItems,
+            subtotal: formatPrice(state.subtotal),
+            tax: formatPrice(state.tax),
+            shipping: formatPrice(state.shipping),
+            total: formatPrice(state.total),
+            hasItems,
+            qualifiesForFreeShipping,
+            amountToFreeShipping,
+          };
+        },
+
+        loadCart: () => {
+          // Called automatically by persist middleware
+        },
+
+        saveCart: () => {
+          // Called automatically by persist middleware
+        },
+      })),
+      {
+        name: STORAGE_KEY,
+        storage: createJSONStorage(() => localStorage),
+        partialize: (state) => ({
+          items: state.items,
+        }),
+        onRehydrateStorage: () => (state) => {
+          if (state) {
+            // Recalculate totals after rehydration
+            const totals = calculateTotals(state.items);
+            state.totalItems = totals.totalItems;
+            state.subtotal = totals.subtotal;
+            state.tax = totals.tax;
+            state.shipping = totals.shipping;
+            state.total = totals.total;
+            state.discount = totals.discount;
+          }
+        },
+      }
+    )
+  )
 );
 
-// Funzione helper per calcolare i totali
-function calculateTotals(items: CartItem[]) {
-	const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-	const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-	const tax = subtotal * TAX_RATE;
-	const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-	const totalPrice = subtotal + tax + shipping;
-	const isEmpty = items.length === 0;
+// === Selectors (for performance optimization) ===
+export const useCartItems = () => useCartStore(state => state.items);
+export const useCartTotal = () => useCartStore(state => state.total);
+export const useCartSummary = () => useCartStore(state => state.getCartSummary());
+export const useCartItemCount = () => useCartStore(state => state.totalItems);
+export const useIsCartEmpty = () => useCartStore(state => state.items.length === 0);
 
-	return {
-		totalItems,
-		subtotal: Math.round(subtotal * 100) / 100,
-		tax: Math.round(tax * 100) / 100,
-		shipping: Math.round(shipping * 100) / 100,
-		totalPrice: Math.round(totalPrice * 100) / 100,
-		isEmpty
-	};
+// === Custom Hooks ===
+export const useAddToCart = () => {
+  const addItem = useCartStore(state => state.addItem);
+  
+  return (item: Omit<CartItem, 'id' | 'quantity'> & { quantity?: number }) => {
+    try {
+      addItem(item);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
+      return { success: false, error: 'Failed to add item to cart' };
+    }
+  };
+};
+
+export const useRemoveFromCart = () => {
+  const removeItem = useCartStore(state => state.removeItem);
+  
+  return (itemId: string) => {
+    try {
+      removeItem(itemId);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to remove item from cart:', error);
+      return { success: false, error: 'Failed to remove item from cart' };
+    }
+  };
+};
+
+// === Development Tools ===
+if (process.env.NODE_ENV === 'development') {
+  // Subscribe to cart changes for debugging
+  useCartStore.subscribe((state) => {
+    console.log('Cart updated:', {
+      itemCount: state.totalItems,
+      total: formatPrice(state.total),
+    });
+  });
 }

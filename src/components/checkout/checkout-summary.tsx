@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { useCartStore } from "@/lib/stores/cart-store.optimized";
+import { useCartStore } from "@/lib/stores/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { Package, Truck, Gift } from "lucide-react";
 

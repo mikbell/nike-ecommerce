@@ -9,7 +9,7 @@ import { formatPrice, calculateDiscount } from "@/lib/utils";
 import { ProductListItem } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAddToCart } from "@/lib/stores/cart-store.optimized";
+import { useAddToCart } from "@/lib/stores/cart-store";
 
 // === Props Interface ===
 interface ProductCardProps {

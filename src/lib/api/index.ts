@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { ApiResponse, PaginatedResponse, AppError } from '@/types';
-import { getErrorMessage } from '@/lib/utils';
+import { getErrorMessage } from '@/lib/utils/index';
 
 // === Error Classes ===
 export class ApiError extends Error implements AppError {
