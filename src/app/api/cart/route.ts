@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { carts, cartItems } from '@/lib/db/schema';
 import { getCurrentUser, getGuestSession, createGuestSession } from '@/lib/auth/actions';
-import { eq, and } from 'drizzle-orm';
-import { CartItem } from '@/lib/types/cart';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 const AddToCartSchema = z.object({

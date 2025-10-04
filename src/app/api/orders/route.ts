@@ -236,7 +236,7 @@ async function handleGetOrders(request: NextRequest) {
     // Convert to array and calculate item count
     const ordersArray = Array.from(ordersMap.values()).map(order => ({
       ...order,
-      itemCount: order.items.reduce((sum: number, item: any) => sum + item.quantity, 0),
+      itemCount: order.items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0),
     }));
 
     return createResponse(ordersArray, {

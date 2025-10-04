@@ -3,7 +3,7 @@ import React from "react";
 import Card from "./card";
 import { getAllProducts } from "@/lib/db/queries/products";
 import { useCartStore } from "@/lib/stores/cart-store";
-import { convertProductToCartItem, getAddToCartSuccessMessage, canAddToCart } from "@/lib/utils/cart-utils";
+import { convertProductToCartItem, canAddToCart } from "@/lib/utils/cart-utils";
 import { toast } from "sonner";
 
 type ProductListItem = Awaited<ReturnType<typeof getAllProducts>>[0];
