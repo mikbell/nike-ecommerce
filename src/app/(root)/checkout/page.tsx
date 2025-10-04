@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/stores/cart-store";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,8 @@ import Link from "next/link";
 
 export default function CheckoutPage() {
 	const router = useRouter();
-	const { items, isEmpty, totalPrice, clearCart } = useCartStore();
+	const { items, isEmpty, totalPrice, clearCart, subtotal, tax, shipping } = useCartStore();
+	const { user, isLoading: isAuthLoading } = useAuth();
 	const [isLoading, setIsLoading] = useState(false);
 	
 	// Form state
@@ -37,13 +39,18 @@ export default function CheckoutPage() {
 		paymentMethod: "card",
 	});
 
-	// Redirect se il carrello è vuoto
 	useEffect(() => {
+		if (!isAuthLoading && !user) {
+			router.push("/sign-in");
+			toast.error("Devi effettuare l'accesso per completare l'ordine");
+			return;
+		}
+		
 		if (isEmpty) {
 			router.push("/");
 			toast.error("Il carrello è vuoto");
 		}
-	}, [isEmpty, router]);
+	}, [isEmpty, isAuthLoading, user, router]);
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
@@ -65,20 +72,35 @@ export default function CheckoutPage() {
 		setIsLoading(true);
 
 		try {
-			// Simula chiamata API per processare l'ordine
-			await new Promise(resolve => setTimeout(resolve, 2000));
-			
-			// TODO: Implementare logica di pagamento e creazione ordine
-			console.log("Order data:", {
-				items,
-				shippingInfo: formData,
-				totalPrice
+			const response = await fetch('/api/orders', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				credentials: 'include',
+				body: JSON.stringify({
+					shippingInfo: formData,
+					items: items.map(item => ({
+						variantId: item.variantId,
+						quantity: item.quantity,
+						price: item.price,
+					})),
+					subtotal,
+					tax,
+					shipping,
+					totalAmount: totalPrice,
+				}),
 			});
 
-			// Svuota il carrello e reindirizza
+			if (!response.ok) {
+				throw new Error('Errore durante la creazione dell\'ordine');
+			}
+
+			const result = await response.json();
+
 			clearCart();
 			toast.success("Ordine completato con successo!");
-			router.push("/order-confirmation");
+			router.push(`/order-confirmation?orderNumber=${result.order.orderNumber}`);
 
 		} catch (error) {
 			console.error("Errore durante il checkout:", error);
@@ -88,8 +110,8 @@ export default function CheckoutPage() {
 		}
 	};
 
-	if (isEmpty) {
-		return null; // Il redirect è gestito dall'useEffect
+	if (isEmpty || isAuthLoading) {
+		return null;
 	}
 
 	return (
