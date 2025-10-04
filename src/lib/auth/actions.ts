@@ -3,6 +3,7 @@
 import { auth } from "./index";
 import { db } from "../db";
 import { guest } from "../db/schema/guest";
+import { carts, cartItems } from "../db/schema";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
@@ -217,27 +218,94 @@ export async function getGuestSession() {
 }
 
 /**
- * Pulisce la sessione guest dal database e dal browser dopo l'accesso/registrazione.
- * (Quando la logica del carrello sarà implementata, l'unione avverrà qui).
+ * Unisce il carrello guest con il carrello utente dopo login/registrazione.
  */
 export async function mergeGuestCartWithUserCart(
 	userId: string,
 	guestSessionToken: string
 ) {
 	try {
-		// PER ORA: Semplice eliminazione della sessione guest
-		await db.delete(guest).where(eq(guest.sessionToken, guestSessionToken));
+		const [guestRecord] = await db
+			.select()
+			.from(guest)
+			.where(eq(guest.sessionToken, guestSessionToken))
+			.limit(1);
 
-		console.log(`Guest session cleanup for user ${userId} completed`);
+		if (!guestRecord) {
+			return { success: true };
+		}
+
+		const guestCart = await db.query.carts.findFirst({
+			where: eq(carts.guestId, guestRecord.id),
+			with: {
+				cartItems: true
+			}
+		});
+
+		if (!guestCart || guestCart.cartItems.length === 0) {
+			await db.delete(guest).where(eq(guest.id, guestRecord.id));
+			return { success: true };
+		}
+
+		let userCart = await db.query.carts.findFirst({
+			where: eq(carts.userId, userId),
+			with: {
+				cartItems: true
+			}
+		});
+
+		if (!userCart) {
+			[userCart] = await db.insert(carts).values({
+				userId,
+			}).returning();
+		}
+
+		for (const guestItem of guestCart.cartItems) {
+			// Verifica se l'item esiste già nel carrello utente
+			const existingItem = userCart.cartItems?.find(
+				item => item.productVariantId === guestItem.productVariantId
+			);
+
+			if (existingItem) {
+				const variant = await db.query.productVariants.findFirst({
+					where: (variants, { eq }) => eq(variants.id, guestItem.productVariantId)
+				});
+
+				const newQuantity = Math.min(
+					existingItem.quantity + guestItem.quantity,
+					variant?.inStock || 999
+				);
+
+				await db
+					.update(cartItems)
+					.set({ 
+						quantity: newQuantity,
+						updatedAt: new Date()
+					})
+					.where(eq(cartItems.id, existingItem.id));
+			} else {
+				await db.insert(cartItems).values({
+					cartId: userCart.id,
+					productVariantId: guestItem.productVariantId,
+					quantity: guestItem.quantity,
+				});
+			}
+		}
+
+		await db.delete(cartItems).where(eq(cartItems.cartId, guestCart.id));
+		await db.delete(carts).where(eq(carts.id, guestCart.id));
+		await db.delete(guest).where(eq(guest.id, guestRecord.id));
+
+		console.log(`Guest cart merged for user ${userId}`);
 		return { success: true };
 	} catch (error) {
-		console.error("Merge/Cleanup guest session error:", error);
+		console.error("Merge guest cart error:", error);
 		return {
 			success: false,
 			error:
 				error instanceof Error
 					? error.message
-					: "Failed to clean up guest session",
+					: "Failed to merge guest cart",
 		};
 	}
 }

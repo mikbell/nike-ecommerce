@@ -3,7 +3,7 @@ import React from "react";
 import Card from "./card";
 import { getAllProducts } from "@/lib/db/queries/products";
 import { useCartStore } from "@/lib/stores/cart-store";
-import { convertProductToCartItem, getAddToCartSuccessMessage, canAddToCart } from "@/lib/utils/cart-utils";
+import { convertProductToCartItem, canAddToCart } from "@/lib/utils/cart-utils";
 import { toast } from "sonner";
 
 type ProductListItem = Awaited<ReturnType<typeof getAllProducts>>[0];
@@ -11,8 +11,7 @@ type ProductListItem = Awaited<ReturnType<typeof getAllProducts>>[0];
 const ProductList = ({ products }: { products: ProductListItem[] }) => {
 	const { addItem } = useCartStore();
 
-	const handleAddToCart = (product: ProductListItem) => {
-		// Valida se il prodotto può essere aggiunto al carrello
+	const handleAddToCart = async (product: ProductListItem) => {
 		const validation = canAddToCart({
 			id: product.id,
 			title: product.title,
@@ -30,7 +29,6 @@ const ProductList = ({ products }: { products: ProductListItem[] }) => {
 			return;
 		}
 
-		// Converti il prodotto in CartItem
 		const cartItem = convertProductToCartItem({
 			id: product.id,
 			title: product.title,
@@ -43,11 +41,7 @@ const ProductList = ({ products }: { products: ProductListItem[] }) => {
 			sizes: product.sizes,
 		});
 
-		// Aggiungi al carrello
-		addItem(cartItem);
-
-		// Mostra messaggio di successo
-		toast.success(getAddToCartSuccessMessage(product.title));
+		await addItem(cartItem);
 	};
 
 	const handleToggleFavorite = (product: ProductListItem) => {

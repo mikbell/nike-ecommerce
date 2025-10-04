@@ -79,8 +79,18 @@ export default function CheckoutPage() {
 				},
 				credentials: 'include',
 				body: JSON.stringify({
-					shippingInfo: formData,
+					shippingInfo: {
+						email: formData.email,
+						firstName: formData.firstName,
+						lastName: formData.lastName,
+						phone: formData.phone,
+						address: formData.address,
+						city: formData.city,
+						postalCode: formData.postalCode,
+						country: formData.country,
+					},
 					items: items.map(item => ({
+						productId: item.productId,
 						variantId: item.variantId,
 						quantity: item.quantity,
 						price: item.price,
@@ -93,18 +103,19 @@ export default function CheckoutPage() {
 			});
 
 			if (!response.ok) {
-				throw new Error('Errore durante la creazione dell\'ordine');
+				const error = await response.json();
+				throw new Error(error.error || 'Errore durante la creazione dell\'ordine');
 			}
 
 			const result = await response.json();
 
-			clearCart();
+			await clearCart();
 			toast.success("Ordine completato con successo!");
-			router.push(`/order-confirmation?orderNumber=${result.order.orderNumber}`);
+			router.push(`/account/orders/${result.order.id}`);
 
 		} catch (error) {
 			console.error("Errore durante il checkout:", error);
-			toast.error("Errore durante il checkout. Riprova.");
+			toast.error(error instanceof Error ? error.message : "Errore durante il checkout. Riprova.");
 		} finally {
 			setIsLoading(false);
 		}

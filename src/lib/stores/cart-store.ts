@@ -1,15 +1,15 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { CartStore, CartItem } from '@/lib/types/cart';
+import { toast } from 'sonner';
 
-const TAX_RATE = 0.22; // 22% IVA
-const FREE_SHIPPING_THRESHOLD = 50; // Spedizione gratuita sopra €50
+const TAX_RATE = 0.22;
+const FREE_SHIPPING_THRESHOLD = 50;
 const SHIPPING_COST = 7.99;
 
 export const useCartStore = create<CartStore>()(
 	persist(
 		(set, get) => ({
-			// Initial state
 			items: [],
 			totalItems: 0,
 			totalPrice: 0,
@@ -18,13 +18,27 @@ export const useCartStore = create<CartStore>()(
 			shipping: 0,
 			isEmpty: true,
 
-			// Actions
-			addItem: (itemData) => {
+			addItem: async (itemData) => {
 				const { quantity = 1, ...item } = itemData;
 				
-				set((state) => {
-					// Controlla se l'item esiste già (stesso prodotto e variante)
-					const existingItemIndex = state.items.findIndex(
+				try {
+					const response = await fetch('/api/cart', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						credentials: 'include',
+						body: JSON.stringify({
+							variantId: item.variantId,
+							quantity,
+						}),
+					});
+
+					if (!response.ok) {
+						const error = await response.json();
+						toast.error(error.error || 'Errore aggiunta al carrello');
+						return;
+					}
+
+					const existingItemIndex = get().items.findIndex(
 						(cartItem) => 
 							cartItem.productId === item.productId && 
 							cartItem.variantId === item.variantId
@@ -33,8 +47,7 @@ export const useCartStore = create<CartStore>()(
 					let newItems: CartItem[];
 
 					if (existingItemIndex >= 0) {
-						// Item esiste, aggiorna la quantità
-						newItems = state.items.map((cartItem, index) => {
+						newItems = get().items.map((cartItem, index) => {
 							if (index === existingItemIndex) {
 								const newQuantity = Math.min(
 									cartItem.quantity + quantity,
@@ -45,42 +58,78 @@ export const useCartStore = create<CartStore>()(
 							return cartItem;
 						});
 					} else {
-						// Nuovo item, aggiungilo al carrello
 						const newItem: CartItem = {
 							...item,
-							id: `${item.productId}-${item.variantId}-${Date.now()}`,
+							id: item.variantId,
 							quantity: Math.min(quantity, item.inStock)
 						};
-						newItems = [...state.items, newItem];
+						newItems = [...get().items, newItem];
 					}
 
-					return {
-						...state,
+					set({
 						items: newItems,
 						...calculateTotals(newItems)
-					};
-				});
+					});
+
+					toast.success('Articolo aggiunto al carrello');
+				} catch (error) {
+					console.error('Error adding to cart:', error);
+					toast.error('Errore durante l\'aggiunta al carrello');
+				}
 			},
 
-			removeItem: (itemId) => {
-				set((state) => {
-					const newItems = state.items.filter(item => item.id !== itemId);
-					return {
-						...state,
+			removeItem: async (itemId) => {
+				try {
+					const response = await fetch('/api/cart', {
+						method: 'PATCH',
+						headers: { 'Content-Type': 'application/json' },
+						credentials: 'include',
+						body: JSON.stringify({
+							itemId,
+							quantity: 0,
+						}),
+					});
+
+					if (!response.ok) {
+						toast.error('Errore rimozione articolo');
+						return;
+					}
+
+					const newItems = get().items.filter(item => item.id !== itemId);
+					set({
 						items: newItems,
 						...calculateTotals(newItems)
-					};
-				});
+					});
+				} catch (error) {
+					console.error('Error removing from cart:', error);
+					toast.error('Errore durante la rimozione');
+				}
 			},
 
-			updateQuantity: (itemId, quantity) => {
+			updateQuantity: async (itemId, quantity) => {
 				if (quantity <= 0) {
 					get().removeItem(itemId);
 					return;
 				}
 
-				set((state) => {
-					const newItems = state.items.map(item => {
+				try {
+					const response = await fetch('/api/cart', {
+						method: 'PATCH',
+						headers: { 'Content-Type': 'application/json' },
+						credentials: 'include',
+						body: JSON.stringify({
+							itemId,
+							quantity,
+						}),
+					});
+
+					if (!response.ok) {
+						const error = await response.json();
+						toast.error(error.error || 'Errore aggiornamento quantità');
+						return;
+					}
+
+					const newItems = get().items.map(item => {
 						if (item.id === itemId) {
 							return { 
 								...item, 
@@ -90,24 +139,41 @@ export const useCartStore = create<CartStore>()(
 						return item;
 					});
 
-					return {
-						...state,
+					set({
 						items: newItems,
 						...calculateTotals(newItems)
-					};
-				});
+					});
+				} catch (error) {
+					console.error('Error updating quantity:', error);
+					toast.error('Errore durante l\'aggiornamento');
+				}
 			},
 
-			clearCart: () => {
-				set({
-					items: [],
-					totalItems: 0,
-					totalPrice: 0,
-					subtotal: 0,
-					tax: 0,
-					shipping: 0,
-					isEmpty: true
-				});
+			clearCart: async () => {
+				try {
+					const response = await fetch('/api/cart', {
+						method: 'DELETE',
+						credentials: 'include',
+					});
+
+					if (!response.ok) {
+						toast.error('Errore svuotamento carrello');
+						return;
+					}
+
+					set({
+						items: [],
+						totalItems: 0,
+						totalPrice: 0,
+						subtotal: 0,
+						tax: 0,
+						shipping: 0,
+						isEmpty: true
+					});
+				} catch (error) {
+					console.error('Error clearing cart:', error);
+					toast.error('Errore durante lo svuotamento');
+				}
 			},
 
 			getItemQuantity: (productId, variantId) => {
@@ -117,20 +183,32 @@ export const useCartStore = create<CartStore>()(
 				return item?.quantity || 0;
 			},
 
-			loadCart: () => {
-				// Questa funzione viene chiamata automaticamente da persist
-				// Possiamo aggiungere logica aggiuntiva se necessario
+			loadCart: async () => {
+				try {
+					const response = await fetch('/api/cart', {
+						credentials: 'include',
+					});
+
+					if (response.ok) {
+						const data = await response.json();
+						if (data.items && Array.isArray(data.items)) {
+							set({
+								items: data.items,
+								...calculateTotals(data.items)
+							});
+						}
+					}
+				} catch (error) {
+					console.error('Error loading cart:', error);
+				}
 			},
 
 			saveCart: () => {
-				// Questa funzione viene chiamata automaticamente da persist
-				// Possiamo aggiungere logica aggiuntiva se necessario
 			}
 		}),
 		{
 			name: 'nike-cart-storage',
 			storage: createJSONStorage(() => localStorage),
-			// Risincronizza i totali dopo il caricamento
 			onRehydrateStorage: () => (state) => {
 				if (state) {
 					const newTotals = calculateTotals(state.items);
@@ -140,13 +218,14 @@ export const useCartStore = create<CartStore>()(
 					state.tax = newTotals.tax;
 					state.shipping = newTotals.shipping;
 					state.isEmpty = newTotals.isEmpty;
+					
+					state.loadCart();
 				}
 			}
 		}
 	)
 );
 
-// Funzione helper per calcolare i totali
 function calculateTotals(items: CartItem[]) {
 	const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 	const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);

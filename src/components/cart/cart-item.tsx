@@ -24,14 +24,14 @@ export default function CartItem({ item, showImage = true, compact = false }: Ca
 		if (newQuantity < 0 || newQuantity > item.inStock) return;
 		
 		setIsUpdating(true);
-		updateQuantity(item.id, newQuantity);
-		
-		// Simula un delay per l'animazione
-		setTimeout(() => setIsUpdating(false), 300);
+		await updateQuantity(item.id, newQuantity);
+		setIsUpdating(false);
 	};
 
-	const handleRemove = () => {
-		removeItem(item.id);
+	const handleRemove = async () => {
+		setIsUpdating(true);
+		await removeItem(item.id);
+		setIsUpdating(false);
 	};
 
 	const totalPrice = item.price * item.quantity;
