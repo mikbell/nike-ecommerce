@@ -12,6 +12,8 @@ const db = drizzle(client);
 
 async function convertIdsToUUID() {
 	try {
+		console.log("Starting UUID conversion...");
+
 		// List of tables to convert
 		const tables = [
 			"user",

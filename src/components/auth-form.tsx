@@ -16,11 +16,10 @@ import {
 } from "@/components/ui/form";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import {
-	signUp as signUpAction,
-	signIn as signInAction,
-} from "@/lib/auth/actions";
+import { useAuth } from "@/lib/hooks/use-auth";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 const signUpSchema = z.object({
 	name: z.string().min(2, "Name must be at least 2 characters"),
@@ -39,6 +38,8 @@ interface AuthFormProps {
 
 export default function AuthForm({ mode }: AuthFormProps) {
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const { signIn, signUp, isLoading } = useAuth();
 	const [showPassword, setShowPassword] = useState(false);
 	const isSignUp = mode === "signup";
 
@@ -52,42 +53,50 @@ export default function AuthForm({ mode }: AuthFormProps) {
 			: ({ email: "", password: "" } as FormData),
 	});
 
-	const [isPending, startTransition] = React.useTransition();
-	const isSubmitting = form.formState.isSubmitting || isPending;
+	const isSubmitting = form.formState.isSubmitting || isLoading;
 
 	/**
 	 * Gestisce l'invio del form.
 	 */
-	const onSubmit = (data: FormData) => {
-		// 1. Converti i dati del form in FormData (necessario per Server Actions)
-		const formData = new window.FormData();
-		Object.entries(data).forEach(([key, value]) => {
-			formData.append(key, value);
-		});
-
-		// 2. Esegui la Server Action all'interno di startTransition
-		startTransition(async () => {
-			const action = isSignUp ? signUpAction : signInAction;
-
-			const result = await action(formData);
+	const onSubmit = async (data: FormData) => {
+		try {
+			let result;
+			
+			if (isSignUp) {
+				const signUpData = data as z.infer<typeof signUpSchema>;
+				result = await signUp(signUpData.email, signUpData.password, signUpData.name);
+			} else {
+				const signInData = data as z.infer<typeof signInSchema>;
+				result = await signIn(signInData.email, signInData.password);
+			}
 
 			if (!result.success) {
 				// Imposta l'errore generale mostrato in cima al form
 				form.setError("root", {
 					type: "manual",
-					message: result.error || "An unknown error occurred.",
+					message: result.error || "Si è verificato un errore sconosciuto.",
 				});
+				toast.error(result.error || "Errore durante l'autenticazione");
 			} else {
-				// Successo: reindirizza
+				// Successo: mostra toast e reindirizza
+				const redirectTo = searchParams.get('redirect') || '/';
+				
 				if (isSignUp) {
-					// Dopo la registrazione, reindirizza al login
-					router.push("/sign-in");
+					toast.success("Registrazione completata con successo!");
 				} else {
-					// Dopo l'accesso, reindirizza alla home page
-					router.push("/");
+					toast.success("Accesso effettuato con successo!");
 				}
+				
+				router.push(redirectTo);
 			}
-		});
+		} catch (error) {
+			console.error('Auth error:', error);
+			form.setError("root", {
+				type: "manual",
+				message: "Si è verificato un errore inaspettato.",
+			});
+			toast.error("Errore durante l'autenticazione");
+		}
 	};
 
 	return (
