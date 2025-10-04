@@ -1,4 +1,4 @@
-import { pgTable, uuid, integer } from "drizzle-orm/pg-core";
+import { pgTable, uuid, integer, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -14,6 +14,8 @@ export const cartItems = pgTable("cartItems", {
 		.notNull()
 		.references(() => productVariants.id, { onDelete: "cascade" }),
 	quantity: integer("quantity").notNull().default(1),
+	createdAt: timestamp("createdAt").notNull().defaultNow(),
+	updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
 export const cartItemsRelations = relations(cartItems, ({ one }) => ({
